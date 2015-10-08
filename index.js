@@ -1,4 +1,6 @@
 /****************************************************************************
+ Copyright (c) 2008-2010 Ricardo Quesada
+ Copyright (c) 2011-2012 cocos2d-x.org
  Copyright (c) 2013-2014 Chukong Technologies Inc.
 
  http://www.cocos2d-x.org
@@ -22,14 +24,35 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-// ----------------------------------- LabelTTF WebGL render cmd ----------------------------
-(function() {
-    cc.LabelTTF.WebGLRenderCmd = function (renderable) {
-        cc.Sprite.WebGLRenderCmd.call(this, renderable);
-        cc.LabelTTF.CacheRenderCmd.call(this);
-        this.setShaderProgram(cc.shaderCache.programForKey(cc.LabelTTF._SHADER_PROGRAM));
-    };
-    var proto = cc.LabelTTF.WebGLRenderCmd.prototype = Object.create(cc.Sprite.WebGLRenderCmd.prototype);
-    cc.js.mixin(cc.LabelTTF.CacheRenderCmd.prototype, proto);
-    proto.constructor = cc.LabelTTF.WebGLRenderCmd;
-})();
+require('./polyfill');
+
+// define cc
+
+var getWrapper;
+var root = typeof global !== 'undefined' ? global : window;
+
+// `cc(node)` takes a runtime node and return its corresponding cc.Runtime.NodeWrapper instance.
+var cc = function (node) {
+    return getWrapper(node);
+};
+root.cc = cc;
+
+cc._setWrapperGetter = function (getter) {
+    getWrapper = getter;
+};
+
+// origin cocos2d compiled by closure
+require('./bin/modular-cocos2d');
+
+// EXTENDS FOR FIREBALL
+
+require('./cocos2d/core/platform/js');
+
+if (CC_EDITOR) {
+
+    require('./cocos2d/deprecated');
+
+}
+
+
+module.exports = cc;
