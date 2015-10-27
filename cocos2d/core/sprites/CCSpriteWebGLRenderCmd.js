@@ -28,8 +28,12 @@
         cc.Node.WebGLRenderCmd.call(this, renderable);
         this._needDraw = true;
 
-        this._quad = new cc.V3F_C4B_T2F_Quad();
-        this._quadWebBuffer = cc._renderContext.createBuffer();
+        this._quad = [];
+        this._quadWebBuffer = [];
+        for(var i = 0; i < 9; i++) {
+            this._quad.push(new cc.V3F_C4B_T2F_Quad());
+            this._quadWebBuffer.push(cc._renderContext.createBuffer());
+        }
         this._quadDirty = true;
         this._dirty = false;
         this._recursiveDirty = false;
@@ -37,6 +41,16 @@
 
     var proto = cc.Sprite.WebGLRenderCmd.prototype = Object.create(cc.Node.WebGLRenderCmd.prototype);
     proto.constructor = cc.Sprite.WebGLRenderCmd;
+
+    proto._quadNumber = function() {
+        var node = this._node;
+        if(node.getScale9Enabled()){
+            return 9;
+        }
+        else{
+            return 1;
+        }
+    }
 
     proto.updateBlendFunc = function (blendFunc) {};
 
@@ -85,11 +99,19 @@
     };
 
     proto._init = function () {
-        var tempColor = {r: 255, g: 255, b: 255, a: 255}, quad = this._quad;
-        quad.bl.colors = tempColor;
-        quad.br.colors = tempColor;
-        quad.tl.colors = tempColor;
-        quad.tr.colors = tempColor;
+        var node = this._node;
+
+        var tempColor = {r: 255, g: 255, b: 255, a: 255};
+
+        for(var i=0; i < this._quadNumber(); i++)
+        {
+            var quad = this._quad[i];
+            quad.bl.colors = tempColor;
+            quad.br.colors = tempColor;
+            quad.tl.colors = tempColor;
+            quad.tr.colors = tempColor;
+        }
+
         this._quadDirty = true;
     };
 
@@ -97,18 +119,78 @@
         var node = this._node;
         var x1 = node._offsetPosition.x;
         var y1 = node._offsetPosition.y;
-        var x2 = x1 + node._rect.width;
-        var y2 = y1 + node._rect.height;
-        var locQuad = this._quad;
-        locQuad.bl.vertices = {x: x1, y: y1, z: 0};
-        locQuad.br.vertices = {x: x2, y: y1, z: 0};
-        locQuad.tl.vertices = {x: x1, y: y2, z: 0};
-        locQuad.tr.vertices = {x: x2, y: y2, z: 0};
+        var x4 = x1 + node._rect.width;
+        var y4 = y1 + node._rect.height;
+        var locVertexZ = node._vertexZ;
+
+        if(node.getScale9Enabled())
+        {
+
+            var rect = node._rect;
+            var preferSize = node.getPreferredSize();
+            var x1 = node._offsetPosition.x;
+            var y1 = node._offsetPosition.y;
+
+            var x4 = x1 + preferSize.width;
+            var y4 = y1 + preferSize.height;
+
+            var capInsets = node.getCapInsets();
+
+            var x2 = x1 + capInsets.x;
+            var y2 = y1 + capInsets.y;
+
+            var x3 = x4 - (rect.width - capInsets.x - capInsets.width);
+            var y3 = y4 - (rect.height - capInsets.y - capInsets.height);
+            var pointLists=[];
+            pointLists.push(cc.p(x1,y1)); pointLists.push(cc.p(x2,y1));
+            pointLists.push(cc.p(x1,y2)); pointLists.push(cc.p(x2,y2));
+
+            pointLists.push(cc.p(x2,y1)); pointLists.push(cc.p(x3,y1));
+            pointLists.push(cc.p(x2,y2)); pointLists.push(cc.p(x3,y2));
+
+            pointLists.push(cc.p(x3,y1)); pointLists.push(cc.p(x4,y1));
+            pointLists.push(cc.p(x3,y2)); pointLists.push(cc.p(x4,y2));
+
+            pointLists.push(cc.p(x1,y2)); pointLists.push(cc.p(x2,y2));
+            pointLists.push(cc.p(x1,y3)); pointLists.push(cc.p(x2,y3));
+
+            pointLists.push(cc.p(x2,y2)); pointLists.push(cc.p(x3,y2));
+            pointLists.push(cc.p(x2,y3)); pointLists.push(cc.p(x3,y3));
+
+            pointLists.push(cc.p(x3,y2)); pointLists.push(cc.p(x4,y2));
+            pointLists.push(cc.p(x3,y3)); pointLists.push(cc.p(x4,y3));
+
+            pointLists.push(cc.p(x1,y3)); pointLists.push(cc.p(x2,y3));
+            pointLists.push(cc.p(x1,y4)); pointLists.push(cc.p(x2,y4));
+
+            pointLists.push(cc.p(x2,y3)); pointLists.push(cc.p(x3,y3));
+            pointLists.push(cc.p(x2,y4)); pointLists.push(cc.p(x3,y4));
+
+            pointLists.push(cc.p(x3,y3)); pointLists.push(cc.p(x4,y3));
+            pointLists.push(cc.p(x3,y4)); pointLists.push(cc.p(x4,y4));
+
+            for(var i =0; i< this._quadNumber(); ++i)
+            {
+                this._quad[i].bl.vertices = {x: pointLists[4*i + 0].x, y: pointLists[4*i + 0].y, z: locVertexZ};
+                this._quad[i].br.vertices = {x: pointLists[4*i + 1].x, y: pointLists[4*i + 1].y, z: locVertexZ};
+                this._quad[i].tl.vertices = {x: pointLists[4*i + 2].x, y: pointLists[4*i + 2].y, z: locVertexZ};
+                this._quad[i].tr.vertices = {x: pointLists[4*i + 3].x, y: pointLists[4*i + 3].y, z: locVertexZ};
+            }
+        }
+        else
+        {
+            var locQuad = this._quad[0];
+            locQuad.bl.vertices = {x: x1, y: y1, z: 0};
+            locQuad.br.vertices = {x: x4, y: y1, z: 0};
+            locQuad.tl.vertices = {x: x1, y: y4, z: 0};
+            locQuad.tr.vertices = {x: x4, y: y4, z: 0};
+        }
+
         this._quadDirty = true;
     };
 
     proto.getQuad = function () {
-        return this._quad;
+        return this._quad[0];
     };
 
     proto._updateForSetSpriteFrame = function () {};
@@ -156,7 +238,9 @@
         var atlasWidth = tex.pixelsWidth;
         var atlasHeight = tex.pixelsHeight;
 
-        var left, right, top, bottom, tempSwap, locQuad = this._quad;
+        var left, right, top, bottom, tempSwap, locQuad = this._quad[0];
+        var capInset = node.getCapInsets();
+        var uvLists = [];
         if (node._rectRotated) {
             if (cc.FIX_ARTIFACTS_BY_STRECHING_TEXEL) {
                 left = (2 * rect.x + 1) / (2 * atlasWidth);
@@ -181,15 +265,21 @@
                 left = right;
                 right = tempSwap;
             }
+            
+            if(node.getScale9Enabled()) {
 
-            locQuad.bl.texCoords.u = left;
-            locQuad.bl.texCoords.v = top;
-            locQuad.br.texCoords.u = left;
-            locQuad.br.texCoords.v = bottom;
-            locQuad.tl.texCoords.u = right;
-            locQuad.tl.texCoords.v = top;
-            locQuad.tr.texCoords.u = right;
-            locQuad.tr.texCoords.v = bottom;
+            }
+            else{
+                locQuad.bl.texCoords.u = left;
+                locQuad.bl.texCoords.v = top;
+                locQuad.br.texCoords.u = left;
+                locQuad.br.texCoords.v = bottom;
+                locQuad.tl.texCoords.u = right;
+                locQuad.tl.texCoords.v = top;
+                locQuad.tr.texCoords.u = right;
+                locQuad.tr.texCoords.v = bottom;
+            }
+
         } else {
             if (cc.FIX_ARTIFACTS_BY_STRECHING_TEXEL) {
                 left = (2 * rect.x + 1) / (2 * atlasWidth);
@@ -215,14 +305,62 @@
                 bottom = tempSwap;
             }
 
-            locQuad.bl.texCoords.u = left;
-            locQuad.bl.texCoords.v = bottom;
-            locQuad.br.texCoords.u = right;
-            locQuad.br.texCoords.v = bottom;
-            locQuad.tl.texCoords.u = left;
-            locQuad.tl.texCoords.v = top;
-            locQuad.tr.texCoords.u = right;
-            locQuad.tr.texCoords.v = top;
+            if(node.getScale9Enabled())
+            {
+                var x1 = left; var y1 = bottom;
+                var x4 = right; var y4 = top;
+                var x2,x3,y2,y3;
+                x2 = capInset.x/rect.width;
+                x3 = (capInset.x+capInset.width)/rect.width;
+                y2 = capInset.y/rect.height;
+                y3 = (capInset.y + capInset.height)/rect.height;
+                x2 = left + (right-left) * x2;
+                x3 = left + (right-left) * x3;
+                y2 = bottom + (top-bottom) * y2;
+                y3 = bottom + (top-bottom) * y3;
+
+                uvLists.push({u: x1,v: y1}); uvLists.push({u: x2,v: y1});
+                uvLists.push({u: x1,v: y2}); uvLists.push({u: x2,v: y2});
+
+                uvLists.push({u: x2,v: y1}); uvLists.push({u: x3,v: y1});
+                uvLists.push({u: x2,v: y2}); uvLists.push({u: x3,v: y2});
+
+                uvLists.push({u: x3,v: y1}); uvLists.push({u: x4,v: y1});
+                uvLists.push({u: x3,v: y2}); uvLists.push({u: x4,v: y2});
+
+                uvLists.push({u: x1,v: y2}); uvLists.push({u: x2,v: y2});
+                uvLists.push({u: x1,v: y3}); uvLists.push({u: x2,v: y3});
+
+                uvLists.push({u: x2,v: y2}); uvLists.push({u: x3,v: y2});
+                uvLists.push({u: x2,v: y3}); uvLists.push({u: x3,v: y3});
+
+                uvLists.push({u: x3,v: y2}); uvLists.push({u: x4,v: y2});
+                uvLists.push({u: x3,v: y3}); uvLists.push({u: x4,v: y3});
+
+                uvLists.push({u: x1,v: y3}); uvLists.push({u: x2,v: y3});
+                uvLists.push({u: x1,v: y4}); uvLists.push({u: x2,v: y4});
+
+                uvLists.push({u: x2,v: y3}); uvLists.push({u: x3,v: y3});
+                uvLists.push({u: x2,v: y4}); uvLists.push({u: x3,v: y4});
+
+                uvLists.push({u: x3,v: y3}); uvLists.push({u: x4,v: y3});
+                uvLists.push({u: x3,v: y4}); uvLists.push({u: x4,v: y4});
+            }
+            else
+            {
+                uvLists.push({u: left,v: bottom});
+                uvLists.push({u: right,v:bottom});
+                uvLists.push({u: left,v: top});
+                uvLists.push({u: right,v: top});
+            }
+
+            for(var i=0; i < this._quadNumber(); i++)
+            {
+                this._quad[i].bl.texCoords = uvLists[4 * i + 0];
+                this._quad[i].br.texCoords = uvLists[4 * i + 1];
+                this._quad[i].tl.texCoords = uvLists[4 * i + 2];
+                this._quad[i].tr.texCoords = uvLists[4 * i + 3];
+            }
         }
         this._quadDirty = true;
     };
@@ -247,11 +385,14 @@
             locDisplayedColor.g *= a / 255.0;
             locDisplayedColor.b *= a / 255.0;
         }
-        var locQuad = this._quad;
-        locQuad.bl.colors = locDisplayedColor;
-        locQuad.br.colors = locDisplayedColor;
-        locQuad.tl.colors = locDisplayedColor;
-        locQuad.tr.colors = locDisplayedColor;
+        for( var i=0; i < this._quadNumber(); i++)
+        {
+            var locQuad = this._quad[i];
+            locQuad.bl.colors = locDisplayedColor;
+            locQuad.br.colors = locDisplayedColor;
+            locQuad.tl.colors = locDisplayedColor;
+            locQuad.tr.colors = locDisplayedColor;
+        }
 
         // Roll back color
         locDisplayedColor.r = r;
@@ -320,7 +461,7 @@
 
         // recalculate matrix only if it is dirty
         if (this._dirty) {
-            var locQuad = _t._quad, locParent = node._parent;
+            var locQuad = _t._quad[0], locParent = node._parent;
             // If it is not visible, or one of its ancestors is not visible, then do nothing:
             if (!node._visible || ( locParent && locParent !== node._batchNode && locParent._shouldBeHidden)) {
                 locQuad.br.vertices = locQuad.tl.vertices = locQuad.tr.vertices = locQuad.bl.vertices = {x: 0, y: 0, z: 0};
@@ -342,32 +483,9 @@
                 // calculate the Quad based on the Affine Matrix
                 //
                 var locTransformToBatch = node._transformToBatch;
-                var rect = node._rect;
-                var x1 = node._offsetPosition.x;
-                var y1 = node._offsetPosition.y;
-
-                var x2 = x1 + rect.width;
-                var y2 = y1 + rect.height;
-                var x = locTransformToBatch.tx;
-                var y = locTransformToBatch.ty;
-
-                var cr = locTransformToBatch.a;
-                var sr = locTransformToBatch.b;
-                var cr2 = locTransformToBatch.d;
-                var sr2 = -locTransformToBatch.c;
-                var ax = x1 * cr - y1 * sr2 + x;
-                var ay = x1 * sr + y1 * cr2 + y;
-
-                var bx = x2 * cr - y1 * sr2 + x;
-                var by = x2 * sr + y1 * cr2 + y;
-
-                var cx = x2 * cr - y2 * sr2 + x;
-                var cy = x2 * sr + y2 * cr2 + y;
-
-                var dx = x1 * cr - y2 * sr2 + x;
-                var dy = x1 * sr + y2 * cr2 + y;
 
                 var locVertexZ = node._vertexZ;
+                var pointLists=[];
                 if (!cc.SPRITEBATCHNODE_RENDER_SUBPIXEL) {
                     ax = 0 | ax;
                     ay = 0 | ay;
@@ -378,12 +496,81 @@
                     dx = 0 | dx;
                     dy = 0 | dy;
                 }
-                locQuad.bl.vertices = {x: ax, y: ay, z: locVertexZ};
-                locQuad.br.vertices = {x: bx, y: by, z: locVertexZ};
-                locQuad.tl.vertices = {x: dx, y: dy, z: locVertexZ};
-                locQuad.tr.vertices = {x: cx, y: cy, z: locVertexZ};
+                if(node.getScale9Enabled()) {
+                    var rect = node._rect;
+                    var preferSize = node.getPreferredSize();
+                    var x1 = node._offsetPosition.x;
+                    var y1 = node._offsetPosition.y;
+
+                    var x4 = x1 + preferSize.width;
+                    var y4 = y1 + preferSize.height;
+
+                    var capInsets = node.getCapInsets();
+
+                    var x2 = x1 + capInsets.x;
+                    var y2 = y1 + capInsets.y;
+
+                    var x3 = x4 - (rect.width - capInsets.x - capInsets.width);
+                    var y3 = y4 - (rect.height - capInsets.y - capInsets.height);
+
+                    pointLists.push(cc.p(x1,y1)); pointLists.push(cc.p(x2,y1));
+                    pointLists.push(cc.p(x1,y2)); pointLists.push(cc.p(x2,y2));
+
+                    pointLists.push(cc.p(x2,y1)); pointLists.push(cc.p(x3,y1));
+                    pointLists.push(cc.p(x2,y2)); pointLists.push(cc.p(x3,y2));
+
+                    pointLists.push(cc.p(x3,y1)); pointLists.push(cc.p(x4,y1));
+                    pointLists.push(cc.p(x3,y2)); pointLists.push(cc.p(x4,y2));
+
+                    pointLists.push(cc.p(x1,y2)); pointLists.push(cc.p(x2,y2));
+                    pointLists.push(cc.p(x1,y3)); pointLists.push(cc.p(x2,y3));
+
+                    pointLists.push(cc.p(x2,y2)); pointLists.push(cc.p(x3,y2));
+                    pointLists.push(cc.p(x2,y3)); pointLists.push(cc.p(x3,y3));
+
+                    pointLists.push(cc.p(x3,y2)); pointLists.push(cc.p(x4,y2));
+                    pointLists.push(cc.p(x3,y3)); pointLists.push(cc.p(x4,y3));
+
+                    pointLists.push(cc.p(x1,y3)); pointLists.push(cc.p(x2,y3));
+                    pointLists.push(cc.p(x1,y4)); pointLists.push(cc.p(x2,y4));
+
+                    pointLists.push(cc.p(x2,y3)); pointLists.push(cc.p(x3,y3));
+                    pointLists.push(cc.p(x2,y4)); pointLists.push(cc.p(x3,y4));
+
+                    pointLists.push(cc.p(x3,y3)); pointLists.push(cc.p(x4,y3));
+                    pointLists.push(cc.p(x3,y4)); pointLists.push(cc.p(x4,y4));
+
+                }
+                else{
+                    var rect = node._rect;
+                    var x1 = node._offsetPosition.x;
+                    var y1 = node._offsetPosition.y;
+
+                    var x2 = x1 + rect.width;
+                    var y2 = y1 + rect.height;
+                    pointLists.push(cc.p(x1,y1));
+                    pointLists.push(cc.p(x2,y1));
+                    pointLists.push(cc.p(x1,y2));
+                    pointLists.push(cc.p(x2,y2));
+                }
+
+                for(var i=0; i<pointLists.length; i++)
+                {
+                    pointLists[i]=cc.pointApplyAffineTransform(pointLists[i],locTransformToBatch);
+                }
+
+                for(var i =0; i< this._quadNumber(); ++i)
+                {
+                    this._quad[i].bl.vertices = {x: pointLists[4*i + 0].x, y: pointLists[4*i + 0].y, z: locVertexZ};
+                    this._quad[i].br.vertices = {x: pointLists[4*i + 1].x, y: pointLists[4*i + 1].y, z: locVertexZ};
+                    this._quad[i].tl.vertices = {x: pointLists[4*i + 2].x, y: pointLists[4*i + 2].y, z: locVertexZ};
+                    this._quad[i].tr.vertices = {x: pointLists[4*i + 3].x, y: pointLists[4*i + 3].y, z: locVertexZ};
+                }
             }
-            node.textureAtlas.updateQuad(locQuad, node.atlasIndex);
+            if(node.textureAtlas){
+                node.textureAtlas.updateQuad(locQuad, node.atlasIndex);
+            }
+
             node._recursiveDirty = false;
             this._dirty = false;
         }
@@ -441,15 +628,18 @@
                 cc.glBindTexture2DN(0, locTexture);                   // = cc.glBindTexture2D(locTexture);
                 cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_POS_COLOR_TEX);
 
-                gl.bindBuffer(gl.ARRAY_BUFFER, this._quadWebBuffer);
-                if (this._quadDirty) {
-                    gl.bufferData(gl.ARRAY_BUFFER, this._quad.arrayBuffer, gl.DYNAMIC_DRAW);
-                    this._quadDirty = false;
+                for(var i = 0; i< this._quadNumber(); ++i)
+                {
+                    gl.bindBuffer(gl.ARRAY_BUFFER, this._quadWebBuffer[i]);
+                    if (this._quadDirty) {
+                        gl.bufferData(gl.ARRAY_BUFFER, this._quad[i].arrayBuffer, gl.DYNAMIC_DRAW);
+                    }
+                    gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 24, 0);                   //cc.VERTEX_ATTRIB_POSITION
+                    gl.vertexAttribPointer(1, 4, gl.UNSIGNED_BYTE, true, 24, 12);           //cc.VERTEX_ATTRIB_COLOR
+                    gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 24, 16);                  //cc.VERTEX_ATTRIB_TEX_COORDS
+                    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
                 }
-                gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 24, 0);                   //cc.VERTEX_ATTRIB_POSITION
-                gl.vertexAttribPointer(1, 4, gl.UNSIGNED_BYTE, true, 24, 12);           //cc.VERTEX_ATTRIB_COLOR
-                gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 24, 16);                  //cc.VERTEX_ATTRIB_TEX_COORDS
-                gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+                this._quadDirty = false;
             }
         } else {
             this._shaderProgram.use();
@@ -460,14 +650,18 @@
 
             cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_POSITION | cc.VERTEX_ATTRIB_FLAG_COLOR);
 
-            gl.bindBuffer(gl.ARRAY_BUFFER, this._quadWebBuffer);
-            if (this._quadDirty) {
-                gl.bufferData(gl.ARRAY_BUFFER, this._quad.arrayBuffer, gl.STATIC_DRAW);
-                this._quadDirty = false;
+            for(var i = 0; i< this._quadNumber(); ++i)
+            {
+                gl.bindBuffer(gl.ARRAY_BUFFER, this._quadWebBuffer[i]);
+                if (this._quadDirty) {
+                    gl.bufferData(gl.ARRAY_BUFFER, this._quad[i].arrayBuffer, gl.STATIC_DRAW);
+                }
+                gl.vertexAttribPointer(cc.VERTEX_ATTRIB_POSITION, 3, gl.FLOAT, false, 24, 0);
+                gl.vertexAttribPointer(cc.VERTEX_ATTRIB_COLOR, 4, gl.UNSIGNED_BYTE, true, 24, 12);
+                gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
             }
-            gl.vertexAttribPointer(cc.VERTEX_ATTRIB_POSITION, 3, gl.FLOAT, false, 24, 0);
-            gl.vertexAttribPointer(cc.VERTEX_ATTRIB_COLOR, 4, gl.UNSIGNED_BYTE, true, 24, 12);
-            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+            this._quadDirty = false;
+
         }
         cc.g_NumberOfDraws++;
 
@@ -481,7 +675,7 @@
 
         if (cc.SPRITE_DEBUG_DRAW === 1 || node._showNode) {
             // draw bounding box
-            var locQuad = this._quad;
+            var locQuad = this._quad[0];
             var verticesG1 = [
                 cc.p(locQuad.tl.vertices.x, locQuad.tl.vertices.y),
                 cc.p(locQuad.bl.vertices.x, locQuad.bl.vertices.y),
