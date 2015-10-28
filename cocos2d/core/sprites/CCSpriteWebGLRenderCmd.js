@@ -265,7 +265,7 @@
                 left = right;
                 right = tempSwap;
             }
-            
+
             if(node.getScale9Enabled()) {
 
             }

@@ -145,10 +145,10 @@
         sw = locTextureCoord.width;
         sh = locTextureCoord.height;
 
-        x = locX * scaleX;
-        y = locY * scaleY;
-        w = locWidth * scaleX;
-        h = locHeight * scaleY;
+        x = locX ;
+        y = locY ;
+        w = locWidth ;
+        h = locHeight ;
 
         if (texture) {
             image = texture._htmlElementObj;
@@ -156,9 +156,69 @@
                 wrapper.setFillStyle(context.createPattern(image, texture._pattern));
                 context.fillRect(x, y, w, h);
             } else {
-                context.drawImage(image,
-                    sx, sy, sw, sh,
-                    x, y, w, h);
+                if(node.getScale9Enabled()){
+                    var rect = node._rect;
+                    var preferSize = node.getPreferredSize();
+                    var capInset = node.getCapInsets();
+                    capInset.y = rect.height - capInset.y - capInset.height;
+                    var x1,x2,x3,x4,y1,y2,y3,y4;
+                    var tx1,tx2,tx3,tx4,ty1,ty2,ty3,ty4;
+                    x1 = x; y1 = y; x4 = x1 + preferSize.width; y4 = y1 + preferSize.height;
+                    x2 = x1 + capInset.x;
+                    y2 = y1 + capInset.y;
+
+                    x3 = x4 - (rect.width - capInset.x - capInset.width);
+                    y3 = y4 - (rect.height - capInset.y - capInset.height);
+
+                    tx1 = sx; ty1 = sy; tx4 = sx + sw; ty4 = sy + sh;
+                    tx2 = sx + capInset.x; ty2 = sy + capInset.y;
+                    tx3 = sx + capInset.x + capInset.width; ty3 = sy + capInset.y + capInset.height;
+
+                    context.drawImage(image,
+                        tx1, ty1, tx2 - tx1, ty2 - ty1,
+                        x1 * scaleX, y1 * scaleY, (x2 - x1) * scaleX, (y2 - y1) * scaleY);
+
+                    context.drawImage(image,
+                        tx2, ty1, tx3 - tx2, ty2 - ty1,
+                        x2 * scaleX, y1 * scaleY, (x3 - x2) * scaleX, (y2 - y1) * scaleY);
+
+                    context.drawImage(image,
+                        tx3, ty1, tx4 - tx3, ty2 - ty1,
+                        x3 * scaleX, y1 * scaleY, (x4 - x3) * scaleX, (y2 - y1) * scaleY);
+
+
+                    context.drawImage(image,
+                        tx1, ty2, tx2 - tx1, ty3 - ty2,
+                        x1 * scaleX, y2 * scaleY, (x2 - x1) * scaleX, (y3 - y2) * scaleY);
+
+                    context.drawImage(image,
+                        tx2, ty2, tx3 - tx2, ty3 - ty2,
+                        x2 * scaleX, y2 * scaleY, (x3 - x2) * scaleX, (y3 - y2) * scaleY);
+
+                    context.drawImage(image,
+                        tx3, ty2, tx4 - tx3, ty3 - ty2,
+                        x3 * scaleX, y2 * scaleY, (x4 - x3) * scaleX, (y3 - y2) * scaleY);
+
+
+                    context.drawImage(image,
+                        tx1, ty3, tx2 - tx1, ty4 - ty3,
+                        x1 * scaleX, y3 * scaleY, (x2 - x1) * scaleX, (y4 - y3) * scaleY);
+
+                    context.drawImage(image,
+                        tx2, ty3, tx3 - tx2, ty4 - ty3,
+                        x2 * scaleX, y3 * scaleY, (x3 - x2) * scaleX, (y4 - y3) * scaleY);
+
+                    context.drawImage(image,
+                        tx3, ty3, tx4 - tx3, ty4 - ty3,
+                        x3 * scaleX, y3 * scaleY, (x4 - x3) * scaleX, (y4 - y3) * scaleY);
+
+                }
+                else{
+                    context.drawImage(image,
+                        sx, sy, sw, sh,
+                        x * scaleX, y * scaleY, w * scaleX, h * scaleY);
+                }
+
             }
         } else {
             var contentSize = node._contentSize;
