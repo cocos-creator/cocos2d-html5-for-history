@@ -331,6 +331,7 @@ var NodeWrapper = cc.Class(/** @lends cc.ENode# */{
                 color.r = value.r;
                 color.g = value.g;
                 color.b = value.b;
+                color.a = value.a;
                 // Discard Alpha !!!
                 this._sgNode.color = value;
                 this._onColorChanged();
