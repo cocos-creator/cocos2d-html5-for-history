@@ -122,6 +122,10 @@ cc.Sprite = cc.Node.extend(/** @lends cc.Sprite# */{
     _textureLoaded:false,
     _className:"Sprite",
 
+    _capInsets: null,
+    _scale9Enabled: false,
+    _preferredSize:null,
+
     ctor: function (fileName, rect, rotated) {
         var self = this;
         cc.Node.prototype.ctor.call(self);
@@ -130,8 +134,44 @@ cc.Sprite = cc.Node.extend(/** @lends cc.Sprite# */{
         self._unflippedOffsetPositionFromCenter = cc.p(0, 0);
         self._blendFunc = {src: cc.BLEND_SRC, dst: cc.BLEND_DST};
         self._rect = cc.rect(0, 0, 0, 0);
-
+        self._capInsets = cc.rect(0, 0, 0, 0);
         self._softInit(fileName, rect, rotated);
+    },
+
+    getCapInsets: function () {
+        return cc.rect(this._capInsets);
+    },
+
+    setCapInsets: function (capInsets) {
+        this._capInsets = capInsets;
+        this._renderCmd._init();
+        this._renderCmd.setDirtyFlag(cc.Node._dirtyFlags.transformDirty);
+        this._renderCmd._resetForBatchNode();
+        this._renderCmd._setTextureCoords(this._rect,true);
+    },
+
+    setScale9Enabled: function(enabled){
+        this._scale9Enabled = enabled;
+        this._renderCmd._init();
+        this._renderCmd.setDirtyFlag(cc.Node._dirtyFlags.transformDirty);
+        this._renderCmd._resetForBatchNode();
+        this._renderCmd._setTextureCoords(this._rect,true);
+    },
+
+    getScale9Enabled: function(){
+      return this._scale9Enabled;
+    },
+
+    setPreferredSize: function(size) {
+        this._preferredSize = size;
+        this._renderCmd._init();
+        this._renderCmd.setDirtyFlag(cc.Node._dirtyFlags.transformDirty);
+        this._renderCmd._resetForBatchNode();
+        this._renderCmd._setTextureCoords(this._rect,true);
+    },
+
+    getPreferredSize: function(){
+        return cc.size(this._preferredSize);
     },
 
     /**
