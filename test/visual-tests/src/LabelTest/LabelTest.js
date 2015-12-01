@@ -2304,7 +2304,7 @@ var LabelLayoutBaseTest = AtlasDemo.extend({
             if(drawNodesize.width <= 0){
                 drawNodesize.width = 0.1;
             }
-            this._label.setDimensions(drawNodesize.width, drawNodesize.height);
+            this._label.setContentSize(drawNodesize.width, drawNodesize.height);
             this._updateDrawNodeSize(drawNodesize);
         }, this);
 
@@ -2316,7 +2316,7 @@ var LabelLayoutBaseTest = AtlasDemo.extend({
             if(drawNodesize.width <= 0){
                 drawNodesize.width = 0.1;
             }
-            this._label.setDimensions(drawNodesize.width, drawNodesize.height);
+            this._label.setContentSize(drawNodesize.width, drawNodesize.height);
             this._updateDrawNodeSize(drawNodesize);
         }, this);
 

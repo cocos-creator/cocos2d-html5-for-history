@@ -25,7 +25,7 @@
 var HorizontalAlign = cc.TextAlignment;
 var VerticalAlign = cc.VerticalTextAlignment;
 var Overflow = cc.Label.Overflow;
-
+var LabelType = cc.Label.Type;
 /**
  *
  * @class ELabel
@@ -100,8 +100,22 @@ var Label = cc.Class({
         },
 
         /**
-         * Overflow of label
-         * @property {Overflow} overflow
+         * type of label
+         * @property {LabelType} labelType
+         */
+        labelType: {
+            default: LabelType.BMFont,
+            type: LabelType,
+            notify: function(){
+                var sgNode = this._sgNode;
+                if(sgNode){
+                    sgNode.setLabelType(this.labelType);
+                }
+            }
+        },
+        /**
+         * OverFlow of label
+         * @property {Overflow} overFlow
          */
         overflow: {
             default: Overflow.CLAMP,
@@ -109,7 +123,7 @@ var Label = cc.Class({
             notify: function () {
                 var sgNode = this._sgNode;
                 if (sgNode) {
-                    sgNode.setOverflow( this.overFlow );
+                    sgNode.setOverflow( this.overflow );
                 }
             }
         },
@@ -129,16 +143,16 @@ var Label = cc.Class({
         },
 
         // TODO
-        // file: {
-        //     default: null,
-        //     type: cc.TTFFont,
-        //     notify: function () {
-        //         var sgNode = this._sgNode;
-        //         if (sgNode) {
-        //             sgNode.file = this.file;
-        //         }
-        //     }
-        // },
+        file: {
+            default: null,
+            url: cc.BitmapFont,
+            notify: function () {
+                var sgNode = this._sgNode;
+                if (sgNode) {
+                    sgNode.setFile(this.file);
+                }
+            }
+        },
 
         // TODO
         // enableRichText: {
@@ -154,7 +168,7 @@ var Label = cc.Class({
     },
 
     _createSgNode: function () {
-        var sgNode = new cc.Label();
+        var sgNode = new cc.Label("", "", cc.Label.Type.BMFont);
 
         // TODO
         // sgNode.file = this.file;

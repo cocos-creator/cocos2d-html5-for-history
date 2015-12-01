@@ -46,32 +46,22 @@
         }
     };
 
+    proto.updateStatus = function(){
+        cc.Node.WebGLRenderCmd.prototype.updateStatus.call(this);
 
-    proto.visit = function(parentCmd){
-        this._rebuildLabelSkin();
-        cc.Node.WebGLRenderCmd.prototype.visit.call(this, parentCmd);
-        this._node._spriteBatchNode._renderCmd.visit(this);
-    };
-
-    proto.transform = function (parentCmd, recursive) {
-        this._rebuildLabelSkin();
-        cc.Node.WebGLRenderCmd.prototype.transform.call(this, parentCmd, recursive);
-
-        this._node._spriteBatchNode._renderCmd.transform(this, recursive);
+        if(!CC_EDITOR){
+            var flags = cc.Node._dirtyFlags;
+            var locFlag = this._dirtyFlag;
+            var textDirty = locFlag & flags.textDirty;
+            if(textDirty){
+                this._rebuildLabelSkin();
+            }
+            this._dirtyFlag = this._dirtyFlag & cc.Node._dirtyFlags.textDirty ^ this._dirtyFlag;
+        }
     };
 
     proto.rendering = function(ctx){
-        this._rebuildLabelSkin();
         var node = this._node;
-
-        //Label - Debug draw
-        if (cc.LABELBMFONT_DEBUG_DRAW) {
-            var size = node.getContentSize();
-            var pos = cc.p(0 | ( -this._anchorPointInPoints.x), 0 | ( -this._anchorPointInPoints.y));
-            var vertices = [cc.p(pos.x, pos.y), cc.p(pos.x + size.width, pos.y), cc.p(pos.x + size.width, pos.y + size.height), cc.p(pos.x, pos.y + size.height)];
-            cc._drawingUtil.setDrawColor(0, 255, 0, 255);
-            cc._drawingUtil.drawPoly(vertices, 4, true);
-        }
     };
 
 })();

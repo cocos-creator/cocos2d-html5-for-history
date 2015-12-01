@@ -173,7 +173,15 @@ cc.Label = cc.Node.extend({
             this._imageOffset = cc.p(0, 0);
             this._cascadeColorEnabled = true;
             this._cascadeOpacityEnabled = true;
-            this._initBMFontWithString(this._string, this._fontHandle);
+            // this._initBMFontWithString(this._string, this._fontHandle);
+        }
+    },
+    setFile: function(filename){
+        if(filename && filename !== this._fontHandle){
+            this._fontHandle = filename;
+            if(this._labelType === 1){
+                this._initBMFontWithString(this._string, this._fontHandle);
+            }
         }
     },
     //FIXME: toggle not working
@@ -196,39 +204,42 @@ cc.Label = cc.Node.extend({
 
         var texture;
         if (fntFile) {
-            var newConf = cc.loader.getRes(fntFile);
-            if (!newConf) {
-                cc.log("cc.Label._initBMFontWithString(): Impossible to create font. Please check file");
-                return false;
-            }
+            cc.loader.load(fntFile, function(err, results){
+                if(err){
+                    cc.log("cc.Label._initBMFontWithString(): Impossible to create font. Please check file");
+                }
 
-            self._config = newConf;
-            self._fntFile = fntFile;
-            texture = cc.textureCache.addImage(newConf.atlasName);
-            var locIsLoaded = texture.isLoaded();
-            self._textureLoaded = locIsLoaded;
-            if (!locIsLoaded) {
-                texture.once("load", function(event) {
-                    var self1 = this;
-                    self1._textureLoaded = true;
+                self._config = results[0];
+                self._fntFile = fntFile;
+                texture = cc.textureCache.addImage(self._config.atlasName);
+                var locIsLoaded = texture.isLoaded();
+                self._textureLoaded = locIsLoaded;
+                if (!locIsLoaded) {
+                    texture.once("load", function(event) {
+                        var self = this;
+                        self._textureLoaded = true;
 
-                    if (!self1._spriteBatchNode) {
-                        self1._spriteBatchNode = new cc.SpriteBatchNode(texture, self1._string.length);
-                    }
-                    self1.setString(self1._initialString, true);
-                    self1.emit("load");
-                }, self);
-            } else {
-                this._spriteBatchNode = new cc.SpriteBatchNode(texture, this._string.length);
-                // this.addChild(this._spriteBatchNode);
-            }
+                        if (!self._spriteBatchNode) {
+                            self._spriteBatchNode = new cc.SpriteBatchNode(texture, self._string.length);
+                            self.addChild(self._spriteBatchNode);
+                        }
+                        self.setString(self._initialString, true);
+                        self.emit("load");
+                        self.createFontChars();
+                    }, self);
+                } else {
+                    self._spriteBatchNode = new cc.SpriteBatchNode(texture, self._string.length);
+                    self.addChild(self._spriteBatchNode);
+                    self.createFontChars();
+                }
+            });
+
         } else {
             texture = new cc.Texture2D();
             var image = new Image();
             texture.initWithElement(image);
             self._textureLoaded = false;
         }
-        this._setString();
     },
 
     setHorizontalAlign: function(align) {
@@ -257,11 +268,6 @@ cc.Label = cc.Node.extend({
         this._notifyLabelSkinDirty();
     },
 
-    _setString: function() {
-        if (this._textureLoaded) {
-            this.createFontChars();
-        }
-    },
     //this method is used as createFontAtlas
     createFontChars: function() {
         if (!this._config) {
@@ -277,7 +283,6 @@ cc.Label = cc.Node.extend({
         }
         this._lineHeight = this._fontAtlas._lineHeight;
         this._bmFontSize = this._fontAtlas._fontSize;
-        this._labelSkinDirty = true;
 
         var locCfg = this._config;
         var locFontDict = locCfg.fontDefDictionary;
@@ -302,7 +307,7 @@ cc.Label = cc.Node.extend({
 
             this._fontAtlas.addLetterDefinitions(fontDef, letterDefinition);
         }
-        // console.log(this._fontAtlas);
+        this._notifyLabelSkinDirty();
     },
     _computeHorizontalKerningForText: function(text){
         var stringLen = this.getStringLength();
@@ -335,8 +340,8 @@ cc.Label = cc.Node.extend({
             return;
         }
         this._isWrapText = enabled;
-        this._notifyLabelSkinDirty();
         this._rescaleWithOriginalFontSize();
+        this._notifyLabelSkinDirty();
     },
     _rescaleWithOriginalFontSize: function(){
         var renderingFontSize = this._getRenderingFontSize();
@@ -404,19 +409,35 @@ cc.Label = cc.Node.extend({
     setContentSize: function(size, height) {
         var oldWidth = this._contentSize.width;
         var oldHeight = this._contentSize.height;
-        cc.Node.prototype.setContentSize.call(this, size,height);
-        if (oldWidth === this._contentSize.width && oldHeight === this._contentSize.height) {
-            return;
+        if(this._labelType === 0){
+            cc.Node.prototype.setContentSize.call(this, size,height);
+            if (oldWidth === this._contentSize.width && oldHeight === this._contentSize.height) {
+                return;
+            }
+            this._notifyLabelSkinDirty();
+        }else{
+            if(height === null){
+                if(oldWidth === size.width && oldHeight === size.height) return;
+                this.setDimensions(size.width, size.height);
+            }else{
+                if(oldWidth === size && oldHeight === height) return;
+                this.setDimensions(size, height);
+            }
         }
-        this._notifyLabelSkinDirty();
     },
 
     _notifyLabelSkinDirty: function() {
         this._labelSkinDirty = true;
-        this._renderCmd.setDirtyFlag(cc.Node._dirtyFlags.textDirty);
+        if(CC_EDITOR){
+            this._updateContent();
+            this._labelSkinDirty = false;
+        }else{
+            this._renderCmd.setDirtyFlag(cc.Node._dirtyFlags.textDirty);
+        }
     },
     _createRenderCmd: function() {
 
+        return new cc.Label.TTFWebGLRenderCmd(this);
         if (this._labelType === 0) {
             if (cc._renderType === cc.game.RENDER_TYPE_WEBGL)
                 return new cc.Label.TTFWebGLRenderCmd(this);
@@ -506,12 +527,12 @@ cc.Label = cc.Node.extend({
         }
 
     },
-    getContentSize: function(){
-        if(this._labelSkinDirty){
-            this._updateContent();
-        }
-        return this._contentSize;
-    },
+    // getContentSize: function(){
+    //     // if(this._labelType === 1 && this._labelSkinDirty){
+    //     //     this._updateContent();
+    //     // }
+    //     return this._contentSize;
+    // },
 
     _multilineTextWrap: function(nextTokenFunc){
         var textLen = this.getStringLength();
@@ -631,7 +652,7 @@ cc.Label = cc.Node.extend({
         if(this._labelHeight <= 0){
             contentSize.height = this._textDesiredHeight;
         }
-        this.setContentSize(contentSize);
+        cc.Node.prototype.setContentSize.call(this, contentSize);
 
         this._tailoredTopY = contentSize.height;
         this._tailoredBottomY = 0;
@@ -887,12 +908,12 @@ cc.Label = cc.Node.extend({
             this._labelDimensions.height = height;
 
             this._maxLineWidth = width;
-            this._notifyLabelSkinDirty();
             if(this._overFlow === 1){
                 if(this._originalFontSize > 0){
                     this._restoreFontSize();
                 }
             }
+            this._notifyLabelSkinDirty();
         }
     },
     _restoreFontSize: function(){
@@ -902,10 +923,13 @@ cc.Label = cc.Node.extend({
     }
 });
 
-cc.Label.Type = {
+var _p = cc.Label.prototype;
+EventTarget.polyfill(_p);
+
+cc.Label.Type = cc.Enum({
     TTF: 0,
     BMFont: 1
-};
+});
 cc.Label.Overflow = cc.Enum({
     CLAMP: 0,
     SHRINK: 1,
