@@ -415,8 +415,8 @@ cc.Label = cc.Node.extend({
                 return;
             }
             this._notifyLabelSkinDirty();
-        }else{
-            if(height === null){
+        }else if (this._labelType === 1){
+            if(!height){
                 if(oldWidth === size.width && oldHeight === size.height) return;
                 this.setDimensions(size.width, size.height);
             }else{
@@ -527,6 +527,7 @@ cc.Label = cc.Node.extend({
         }
 
     },
+    //TODO:  hack for webgl platform
     // getContentSize: function(){
     //     // if(this._labelType === 1 && this._labelSkinDirty){
     //     //     this._updateContent();

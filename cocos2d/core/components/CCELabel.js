@@ -168,13 +168,13 @@ var Label = cc.Class({
     },
 
     _createSgNode: function () {
-        var sgNode = new cc.Label("", "", cc.Label.Type.BMFont);
+        var sgNode = new cc.Label(this.string, this.file, cc.Label.Type.BMFont);
 
         // TODO
         // sgNode.file = this.file;
         // sgNode.enableRichText = this.enableRichText;
 
-        sgNode.setString( this.string );
+        // sgNode.setString( this.string );
         sgNode.setHorizontalAlign( this.horizontalAlign );
         sgNode.setVerticalAlign( this.verticalAlign );
         sgNode.setFontSize( this.fontSize );
