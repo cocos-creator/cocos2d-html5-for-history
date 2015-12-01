@@ -320,15 +320,19 @@ var Button = cc.Class({
     },
 
     onLoad: function () {
-        if (!this.target) this.target = this.node;
-
-        this._registerEvent();
-        this._applyTarget();
-        this._initState();
+        if (!this.target) {
+            this.target = this.node;
+        }
 
         if (!CC_EDITOR) {
+            this._registerEvent();
             this._registerListeners();
         }
+    },
+
+    start: function () {
+        this._applyTarget();
+        this._initState();
     },
 
     onDestroy: function () {

@@ -728,10 +728,11 @@ var BaseNode = cc.Class(/** @lends cc.ENode# */{
      * The contentSize remains the same no matter the node is scaled or rotated.<br/>
      * All nodes has a size. Layer and Scene has the same size of the screen by default. <br/></p>
      * @method getContentSize
+     * @param {Boolean} [ignoreSizeProvider=false] - true if you need to get the original size of the node
      * @return {Size} The untransformed size of the node.
      */
-    getContentSize: function () {
-        if (this._sizeProvider) {
+    getContentSize: function (ignoreSizeProvider) {
+        if (this._sizeProvider && !ignoreSizeProvider) {
             var size = this._sizeProvider.getContentSize();
             this._contentSize = size;
             return size;

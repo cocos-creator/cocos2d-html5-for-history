@@ -39,6 +39,7 @@
         this._labelCanvas.width = 1;
         this._labelCanvas.height = 1;
         this._labelContext = this._labelCanvas.getContext("2d");
+        this._labelTexture.initWithElement(this._labelCanvas);
         this._quad = new cc.V3F_C4B_T2F_Quad();
         this._quadDirty = true;
         this._quadWebBuffer = cc._renderContext.createBuffer();

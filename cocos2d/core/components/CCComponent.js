@@ -48,11 +48,7 @@ function callOnEnable (self, enable) {
                 }
             }
 
-            if (!(self._objFlags & IsOnStartCalled) && self.start) {
-                cc.director.once(cc.Director.EVENT_BEFORE_UPDATE, _callStart, self);
-            }
-            self.update && cc.director.on(cc.Director.EVENT_COMPONENT_UPDATE, _callUpdate, self);
-            self.lateUpdate && cc.director.on(cc.Director.EVENT_COMPONENT_LATE_UPDATE, _callLateUpdate, self);
+            _registerEvent(self, true);
 
             self._objFlags |= IsOnEnableCalled;
         }
@@ -68,55 +64,76 @@ function callOnEnable (self, enable) {
                 }
             }
 
-            self.update && cc.director.off(cc.Director.EVENT_COMPONENT_UPDATE, _callUpdate, self);
-            self.lateUpdate && cc.director.off(cc.Director.EVENT_COMPONENT_LATE_UPDATE, _callLateUpdate, self);
+            _registerEvent(self, false);
 
             self._objFlags &= ~IsOnEnableCalled;
         }
     }
 }
 
+function _registerEvent (self, on) {
+    if (CC_EDITOR) {
+        if (self.constructor._executeInEditMode || cc.engine._isPlaying) {
+            if (on && self.start && !(self._objFlags & IsOnStartCalled)) {
+                cc.engine.once('before-update', _callStart, self);
+            }
+
+            if (self.update) {
+                if (on) cc.engine.on('post-update', _callUpdate, self);
+                else cc.engine.off('post-update', _callUpdate, self);
+            }
+
+            if (self.lateUpdate) {
+                if (on) cc.engine.on('late-update', _callLateUpdate, self);
+                else cc.engine.off('late-update', _callLateUpdate, self);
+            }
+        }
+    }
+    else {
+        if (on && self.start && !(self._objFlags & IsOnStartCalled)) {
+            cc.director.once(cc.Director.EVENT_BEFORE_UPDATE, _callStart, self);
+        }
+
+        if (self.update) {
+            if (on) cc.director.on(cc.Director.EVENT_COMPONENT_UPDATE, _callUpdate, self);
+            else cc.director.off(cc.Director.EVENT_COMPONENT_UPDATE, _callUpdate, self);
+        }
+
+        if (self.lateUpdate) {
+            if (on) cc.director.on(cc.Director.EVENT_COMPONENT_LATE_UPDATE, _callLateUpdate, self);
+            else cc.director.off(cc.Director.EVENT_COMPONENT_LATE_UPDATE, _callLateUpdate, self);
+        }
+    }
+}
+
 var _callStart = CC_EDITOR ? function () {
-    var isPlaying = cc.engine._isPlaying;
-    if (!(this._objFlags & IsOnStartCalled) && (isPlaying || this.constructor._executeInEditMode)) {
-        if (this.start) {
-            callStartInTryCatch(this);
-        }
-        this._objFlags |= IsOnStartCalled;
-    }
+    callStartInTryCatch(this);
+    this._objFlags |= IsOnStartCalled;
 } : function () {
-    if (!(this._objFlags & IsOnStartCalled)) {
-        if (this.start) {
-            this.start();
-        }
-        this._objFlags |= IsOnStartCalled;
-    }
+    this.start();
+    this._objFlags |= IsOnStartCalled;
 };
+
 var _callUpdate = CC_EDITOR ? function (event) {
-    var isPlaying = cc.engine._isPlaying;
-    if ((isPlaying || this.constructor._executeInEditMode) && this.update) {
-        try {
-            this.update(event.detail);
-        }
-        catch (e) {
-            cc._throw(e);
-        }
+    try {
+        this.update(event.detail);
+    }
+    catch (e) {
+        cc._throw(e);
     }
 } : function (event) {
-    this.update && this.update(event.detail);
+    this.update(event.detail);
 };
+
 var _callLateUpdate = CC_EDITOR ? function (event) {
-    var isPlaying = cc.engine._isPlaying;
-    if ((isPlaying || this.constructor._executeInEditMode) && this.lateUpdate) {
-        try {
-            this.lateUpdate(event.detail);
-        }
-        catch (e) {
-            cc._throw(e);
-        }
+    try {
+        this.lateUpdate(event.detail);
+    }
+    catch (e) {
+        cc._throw(e);
     }
 } : function (event) {
-    this.lateUpdate && this.lateUpdate(event.detail);
+    this.lateUpdate(event.detail);
 };
 
 //var createInvoker = function (timerFunc, timerWithKeyFunc, errorInfo) {

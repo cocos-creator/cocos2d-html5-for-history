@@ -38,7 +38,7 @@ MonitorSize.prototype = {
     _getHeight: function () {
         return this.getContentSize().height;
     }
-}
+};
 
 var SpriteType = cc.SpriteType;
 
@@ -124,7 +124,7 @@ var SpriteRenderer = cc.Class({
                 this._type = value;
                 this._sgNode.setRenderingType(this._type);
                 // manual settings inset top, bttom, right, left.
-                this._updateCapInset();
+                this._applyCapInset();
             },
             type: SpriteType
         },
@@ -136,7 +136,7 @@ var SpriteRenderer = cc.Class({
             set: function (value) {
                 this._useOriginalSize = value;
                 if (value) {
-                    this._updateSpriteSize();
+                    this._applySpriteSize();
                 }
             }
         },
@@ -464,25 +464,30 @@ var SpriteRenderer = cc.Class({
         this.node._sizeProvider = null;
     },
 
-    _updateCapInset: function() {
+    _applyCapInset: function (node) {
         if (this._type === SpriteType.SLICED) {
-            this._sgNode.setInsetTop(this._sprite.insetTop);
-            this._sgNode.setInsetBottom(this._sprite.insetBottom);
-            this._sgNode.setInsetRight(this._sprite.insetRight);
-            this._sgNode.setInsetLeft(this._sprite.insetLeft);
+            var node = node || this._sgNode;
+            node.setInsetTop(this._sprite.insetTop);
+            node.setInsetBottom(this._sprite.insetBottom);
+            node.setInsetRight(this._sprite.insetRight);
+            node.setInsetLeft(this._sprite.insetLeft);
         }
     },
 
-    _updateSpriteSize: function () {
-        if (this._useOriginalSize && this._sgNode) {
+    _applySpriteSize: function (node) {
+        var node = node || this._sgNode;
+        if (this._useOriginalSize) {
             var rect = this._sprite.getRect();
-            this._sgNode.setPreferredSize(rect.size);
+            node.setPreferredSize(rect.size);
+        }
+        else {
+            node.setPreferredSize(this.node.getContentSize(true));
         }
     },
 
     _applySprite: function (node, oldSprite) {
         if (oldSprite) {
-            oldSprite.off('load', this._updateCapInset, this);
+            oldSprite.off('load', this._applyCapInset, this);
         }
         if (!this._sprite) { return; }
         node._spriteRect = cc.rect(0, 0);
@@ -491,13 +496,13 @@ var SpriteRenderer = cc.Class({
         var locLoaded = this._sprite.textureLoaded();
         if (!locLoaded) {
             this._sprite.once('load', function () {
-                this._updateCapInset();
-                this._updateSpriteSize();
+                this._applyCapInset();
+                this._applySpriteSize();
             }, this)
         }
         else {
-            this._updateCapInset();
-            this._updateSpriteSize();
+            this._applyCapInset(node);
+            this._applySpriteSize(node);
         }
     },
 
