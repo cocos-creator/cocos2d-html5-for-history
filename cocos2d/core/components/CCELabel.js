@@ -183,7 +183,6 @@ var Label = cc.Class({
         // sgNode.enableRichText = this.enableRichText;
 
         // sgNode.setString( this.string );
-        sgNode.setFile(this.file);
         sgNode.setHorizontalAlign( this.horizontalAlign );
         sgNode.setVerticalAlign( this.verticalAlign );
         sgNode.setFontSize( this._fontSize );

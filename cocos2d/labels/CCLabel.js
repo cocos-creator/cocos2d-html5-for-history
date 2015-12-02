@@ -170,18 +170,53 @@ cc.Label = cc.Node.extend({
 
         //init bmfont
         if (type === 1) {
-            this._imageOffset = cc.p(0, 0);
-            this._cascadeColorEnabled = true;
-            this._cascadeOpacityEnabled = true;
             this._initBMFontWithString(this._string, this._fontHandle);
         }
     },
     setFile: function(filename){
-        if(filename && filename !== this._fontHandle){
+        if(filename){
             this._fontHandle = filename;
+            var self = this;
             if(this._labelType === 1){
-                this._initBMFontWithString(this._string, this._fontHandle);
+                //try to release the previous resource
+                if(this._config && this._spriteBatchNode && this._fontAtlas){
+                    this._resetBMFont();
+                }
+
+                var texture;
+                cc.loader.load(this._fontHandle, function(err, results){
+                    if(err){
+                        cc.log("cc.Label._initBMFontWithString(): Impossible to create font. Please check file");
+                    }
+
+                    self._config = results[0];
+                    self.createFontChars();
+                    texture = cc.textureCache.addImage(self._config.atlasName);
+                    var locIsLoaded = texture.isLoaded();
+                    self._textureLoaded = locIsLoaded;
+                    if (!locIsLoaded) {
+                        texture.once("load", function(event) {
+                            var self = this;
+
+                            if (!self._spriteBatchNode) {
+                                self._createSpriteBatchNode(texture);
+                            }
+                            self._textureLoaded = true;
+                            self.emit("load");
+                        }, self);
+                    } else {
+                        self._createSpriteBatchNode(texture);
+                    }
+                });
             }
+        }
+    },
+    _resetBMFont: function(){
+        this._fontAtlas = [];
+        this._config = [];
+        if(this._spriteBatchNode){
+            this.removeChild(this._spriteBatchNode);
+            this._spriteBatchNode = null;
         }
     },
     //FIXME: toggle not working
@@ -196,46 +231,15 @@ cc.Label = cc.Node.extend({
     },
     _initBMFontWithString: function(str, fntFile) {
         var self = this;
-
         if (self._config) {
             cc.log("cc.Label._initBMFontWithString(): re-init is no longer supported");
             return false;
         }
+        this._imageOffset = cc.p(0, 0);
+        this._cascadeColorEnabled = true;
+        this._cascadeOpacityEnabled = true;
+        this.setFile(fntFile);
 
-        var texture;
-        if (fntFile) {
-            cc.loader.load(fntFile, function(err, results){
-                if(err){
-                    cc.log("cc.Label._initBMFontWithString(): Impossible to create font. Please check file");
-                }
-
-                self._config = results[0];
-                self.createFontChars();
-                self._fntFile = fntFile;
-                texture = cc.textureCache.addImage(self._config.atlasName);
-                var locIsLoaded = texture.isLoaded();
-                self._textureLoaded = locIsLoaded;
-                if (!locIsLoaded) {
-                    texture.once("load", function(event) {
-                        var self = this;
-
-                        if (!self._spriteBatchNode) {
-                            self._createSpriteBatchNode(texture);
-                        }
-                        self._textureLoaded = true;
-                        self.emit("load");
-                    }, self);
-                } else {
-                    self._createSpriteBatchNode(texture);
-                }
-            });
-
-        } else {
-            texture = new cc.Texture2D();
-            var image = new Image();
-            texture.initWithElement(image);
-            self._textureLoaded = false;
-        }
     },
     _createSpriteBatchNode: function(texture){
         this._spriteBatchNode = new cc.SpriteBatchNode(texture, this._string.length);
@@ -822,6 +826,7 @@ cc.Label = cc.Node.extend({
                 this._reusedRect.y = letterDef._v;
 
                 var py = this._lettersInfo[ctr]._positionY + this._letterOffsetY;
+
                 if(this._labelHeight > 0){
                     if(py > this._tailoredTopY){
                         var clipTop = py - this._tailoredTopY;
@@ -837,6 +842,7 @@ cc.Label = cc.Node.extend({
 
                 if(!this._isWrapText){
                     var px = this._lettersInfo[ctr]._positionX + letterDef._width / 2 * this._bmfontScale + this._linesOffsetX[this._lettersInfo[ctr]._lineIndex];
+
                     if(this._labelWidth > 0){
                         if(px > this._contentSize.width || px < 0){
                             //0 is Clamp, 1 is shrink, 2 is resize
@@ -857,9 +863,11 @@ cc.Label = cc.Node.extend({
                 }
 
                 if(this._reusedRect.height > 0 && this._reusedRect.width > 0){
-                    this._reusedLetter.setTextureRect(this._reusedRect, false, cc._reusedRect);
+                    this._reusedLetter.setTextureRect(this._reusedRect, false, this._reusedRect.size);
+
                     var letterPositionX = this._lettersInfo[ctr]._positionX + this._linesOffsetX[this._lettersInfo[ctr]._lineIndex];
                     this._reusedLetter.setPosition(letterPositionX, py);
+
                     var index = this._spriteBatchNode.getTextureAtlas().getTotalQuads();
                     this._lettersInfo[ctr]._atlasIndex = index;
 
