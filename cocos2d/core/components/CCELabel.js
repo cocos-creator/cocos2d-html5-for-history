@@ -85,16 +85,25 @@ var Label = cc.Class({
             },
         },
 
+        _fontSize: 18,
         /**
          * Font size of label
          * @property {Number} fontSize
          */
         fontSize: {
-            default: 18,
-            notify: function () {
+            get: function(){
                 var sgNode = this._sgNode;
-                if (sgNode) {
-                    sgNode.setFontSize( this.fontSize );
+                if(sgNode){
+                    return sgNode.getFontSize();
+                }
+                return this._fontSize;
+            },
+            set: function(value){
+                this._fontSize = value;
+
+                var sgNode = this._sgNode;
+                if(sgNode){
+                    sgNode.setFontSize(value);
                 }
             }
         },
@@ -177,7 +186,7 @@ var Label = cc.Class({
         sgNode.setFile(this.file);
         sgNode.setHorizontalAlign( this.horizontalAlign );
         sgNode.setVerticalAlign( this.verticalAlign );
-        sgNode.setFontSize( this.fontSize );
+        sgNode.setFontSize( this._fontSize );
         sgNode.setOverflow( this.overflow );
         sgNode.enableWrapText( this.enableWrapText );
         sgNode.setContentSize( this.node.getContentSize() );
