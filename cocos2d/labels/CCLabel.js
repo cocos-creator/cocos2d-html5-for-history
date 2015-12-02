@@ -132,7 +132,6 @@ cc.Label = cc.Node.extend({
     //add variables for bmfont
     _opacityModifyRGB: false,
     _config: null,
-    _initialString: "",
     _fontAtlas: null,
     _bmfontScale: 1.0,
     _bmFontSize: 0,
@@ -173,7 +172,7 @@ cc.Label = cc.Node.extend({
             this._imageOffset = cc.p(0, 0);
             this._cascadeColorEnabled = true;
             this._cascadeOpacityEnabled = true;
-            // this._initBMFontWithString(this._string, this._fontHandle);
+            this._initBMFontWithString(this._string, this._fontHandle);
         }
     },
     setFile: function(filename){
@@ -210,6 +209,7 @@ cc.Label = cc.Node.extend({
                 }
 
                 self._config = results[0];
+                self.createFontChars();
                 self._fntFile = fntFile;
                 texture = cc.textureCache.addImage(self._config.atlasName);
                 var locIsLoaded = texture.isLoaded();
@@ -217,20 +217,15 @@ cc.Label = cc.Node.extend({
                 if (!locIsLoaded) {
                     texture.once("load", function(event) {
                         var self = this;
-                        self._textureLoaded = true;
 
                         if (!self._spriteBatchNode) {
-                            self._spriteBatchNode = new cc.SpriteBatchNode(texture, self._string.length);
-                            self.addChild(self._spriteBatchNode);
+                            self._createSpriteBatchNode(texture);
                         }
-                        self.setString(self._initialString, true);
+                        self._textureLoaded = true;
                         self.emit("load");
-                        self.createFontChars();
                     }, self);
                 } else {
-                    self._spriteBatchNode = new cc.SpriteBatchNode(texture, self._string.length);
-                    self.addChild(self._spriteBatchNode);
-                    self.createFontChars();
+                    self._createSpriteBatchNode(texture);
                 }
             });
 
@@ -240,6 +235,16 @@ cc.Label = cc.Node.extend({
             texture.initWithElement(image);
             self._textureLoaded = false;
         }
+    },
+    _createSpriteBatchNode: function(texture){
+        this._spriteBatchNode = new cc.SpriteBatchNode(texture, this._string.length);
+        this.addChild(this._spriteBatchNode);
+        if(!this._reusedLetter){
+            this._reusedLetter = new cc.Sprite();
+            this._reusedLetter.initWithTexture(this._spriteBatchNode.textureAtlas.texture);
+            this._reusedLetter.setAnchorPoint(cc.p(0,1));
+        }
+        this._updateContent();
     },
 
     setHorizontalAlign: function(align) {
@@ -276,11 +281,6 @@ cc.Label = cc.Node.extend({
 
         this._fontAtlas = new cc.FontAtlas(this._config);
 
-        if(!this._reusedLetter){
-            this._reusedLetter = new cc.Sprite();
-            this._reusedLetter.initWithTexture(this._spriteBatchNode.textureAtlas.texture);
-            this._reusedLetter.setAnchorPoint(cc.p(0,1));
-        }
         this._lineHeight = this._fontAtlas._lineHeight;
         this._bmFontSize = this._fontAtlas._fontSize;
 
@@ -307,7 +307,6 @@ cc.Label = cc.Node.extend({
 
             this._fontAtlas.addLetterDefinitions(fontDef, letterDefinition);
         }
-        this._notifyLabelSkinDirty();
     },
     _computeHorizontalKerningForText: function(text){
         var stringLen = this.getStringLength();

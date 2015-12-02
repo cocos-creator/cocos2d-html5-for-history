@@ -171,10 +171,10 @@ var Label = cc.Class({
         var sgNode = new cc.Label(this.string, this.file, cc.Label.Type.BMFont);
 
         // TODO
-        // sgNode.file = this.file;
         // sgNode.enableRichText = this.enableRichText;
 
         // sgNode.setString( this.string );
+        sgNode.setFile(this.file);
         sgNode.setHorizontalAlign( this.horizontalAlign );
         sgNode.setVerticalAlign( this.verticalAlign );
         sgNode.setFontSize( this.fontSize );
