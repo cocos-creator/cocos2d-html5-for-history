@@ -2078,7 +2078,7 @@ var LabelLayoutBaseTest = AtlasDemo.extend({
             }else if(type === ccui.CheckBox.EVENT_SELECTED){
                 this._label.setLineBreakWithoutSpace(true);
             }
-            this._updateDrawNodeSize(this._label.getContentSize());
+            this._updateDrawNodeSize(this._label.getContentSize(true));
         }, this);
 
         checkBox.setSelected(true);
@@ -2137,7 +2137,7 @@ var LabelLayoutBaseTest = AtlasDemo.extend({
                 stepper.setTag(fontSize);
                 fontSizeLabel.setString("font size:" + fontSize);
                 this._label.setFontSize(fontSize);
-                this._updateDrawNodeSize(this._label.getContentSize());
+                this._updateDrawNodeSize(this._label.getContentSize(true));
                 break;
             case ccui.Widget.TOUCH_CANCELED:
                 break;
@@ -2150,7 +2150,7 @@ var LabelLayoutBaseTest = AtlasDemo.extend({
 
     _updateDrawNodeSize: function(drawNodesize){
         var origin = cc.director.getWinSize();
-        var labelSize = this._label.getContentSize();
+        var labelSize = this._label.getContentSize(true);
         origin.width = origin.width / 2 - (labelSize.width / 2);
         origin.height = origin.height / 2 - (labelSize.height / 2);
 
@@ -2206,7 +2206,7 @@ var LabelLayoutBaseTest = AtlasDemo.extend({
             }else if(type === ccui.CheckBox.EVENT_SELECTED){
                 this._label.enableWrapText(true);
             }
-            this._updateDrawNodeSize(this._label.getContentSize());
+            this._updateDrawNodeSize(this._label.getContentSize(true));
         }, this);
 
         checkBox.setSelected(true);
@@ -2227,7 +2227,7 @@ var LabelLayoutBaseTest = AtlasDemo.extend({
             }else if(type === ccui.CheckBox.EVENT_SELECTED){
                 this._label.setLabelType(cc.Label.Type.TTF);
             }
-            this._updateDrawNodeSize(this._label.getContentSize());
+            this._updateDrawNodeSize(this._label.getContentSize(true));
         }, this);
 
         checkBox.setSelected(false);
@@ -2337,7 +2337,7 @@ var LabelLayoutBaseTest = AtlasDemo.extend({
     _initDrawNode: function(winSize){
         this._drawNode = new cc.DrawNode();
         this.addChild(this._drawNode);
-        this._updateDrawNodeSize(this._label.getContentSize());
+        this._updateDrawNodeSize(this._label.getContentSize(true));
     }
 });
 
@@ -2372,7 +2372,7 @@ var NewLabelBMFontResizeTest = LabelLayoutBaseTest.extend({
         this._super();
         this._label.setOverflow(cc.Label.Overflow.RESIZE);
         this.getChildByName("slider2").setVisible(false);
-        this._updateDrawNodeSize(this._label.getContentSize());
+        this._updateDrawNodeSize(this._label.getContentSize(true));
     },
     title: function(){
 

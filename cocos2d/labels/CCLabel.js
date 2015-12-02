@@ -111,6 +111,7 @@ cc.Label = cc.Node.extend({
     _vAlign: cc.VerticalTextAlignment.TOP, //0 bottom,1 center, 2 top
     _string: "",
     _fontSize: 20,
+    _initFontSizeFromFile: true,
     _overFlow: 0, //0 clamp, 1 shrink 2, resize to content
     _isWrapText: true,
     _numberOfLines: 0,
@@ -134,7 +135,6 @@ cc.Label = cc.Node.extend({
     _config: null,
     _fontAtlas: null,
     _bmfontScale: 1.0,
-    _bmFontSize: 0,
 
     // max width until a line break is added
     _lineHeight: 0,
@@ -166,6 +166,7 @@ cc.Label = cc.Node.extend({
 
         cc.Node.prototype.ctor.call(this);
         this.setAnchorPoint(cc.p(0.5, 0.5));
+        this.setContentSize(cc.size(128,128));
 
         //init bmfont
         if (type === 1) {
@@ -282,7 +283,9 @@ cc.Label = cc.Node.extend({
         this._fontAtlas = new cc.FontAtlas(this._config);
 
         this._lineHeight = this._fontAtlas._lineHeight;
-        this._bmFontSize = this._fontAtlas._fontSize;
+        if(this._initFontSizeFromFile){
+            this.setFontSize(this._fontAtlas._fontSize);
+        }
 
         var locCfg = this._config;
         var locFontDict = locCfg.fontDefDictionary;
@@ -355,8 +358,8 @@ cc.Label = cc.Node.extend({
 
     setFontSize: function(fntSize) {
         this._fontSize = fntSize;
-        this._bmFontSize = fntSize;
         this._originalFontSize = fntSize;
+        this._initFontSizeFromFile = false;
         this._notifyLabelSkinDirty();
     },
 
@@ -435,8 +438,6 @@ cc.Label = cc.Node.extend({
         }
     },
     _createRenderCmd: function() {
-
-        return new cc.Label.TTFWebGLRenderCmd(this);
         if (this._labelType === 0) {
             if (cc._renderType === cc.game.RENDER_TYPE_WEBGL)
                 return new cc.Label.TTFWebGLRenderCmd(this);
@@ -520,19 +521,22 @@ cc.Label = cc.Node.extend({
     _updateBMFontScale: function(){
         var originalFontSize = this._fontAtlas._fontSize;
         if(this._labelType === 1){
-            this._bmfontScale = this._bmFontSize * cc.contentScaleFactor() / originalFontSize;
+            this._bmfontScale = this._fontSize * cc.contentScaleFactor() / originalFontSize;
         }else{
             this._bmfontScale = 1;
         }
 
     },
-    //TODO:  hack for webgl platform
-    // getContentSize: function(){
-    //     // if(this._labelType === 1 && this._labelSkinDirty){
-    //     //     this._updateContent();
-    //     // }
-    //     return this._contentSize;
-    // },
+    getContentSize: function(foreceUpdate){
+        if(foreceUpdate){
+            if(this._labelType === 1 && this._labelSkinDirty){
+                this._updateContent();
+            }
+            return this._contentSize;
+        }else{
+            return cc.Node.prototype.getContentSize.call(this);
+        }
+    },
 
     _multilineTextWrap: function(nextTokenFunc){
         var textLen = this.getStringLength();
@@ -738,7 +742,7 @@ cc.Label = cc.Node.extend({
     },
 
     _getRenderingFontSize: function(){
-        return this._bmFontSize;
+        return this._fontSize;
     },
     _scaleFontSizeDown: function(fontSize){
         var shouldUpdateContent = true;
@@ -748,7 +752,7 @@ cc.Label = cc.Node.extend({
                 fontSize = 0.1;
                 shouldUpdateContent = false;
             }
-            this._bmFontSize = fontSize;
+            this._fontSize = fontSize;
         }
         if(shouldUpdateContent){
             this._updateContent();
@@ -869,7 +873,7 @@ cc.Label = cc.Node.extend({
         return ret;
     },
     _updateLetterSpriteScale: function(sprite){
-        if(this._labelType === 1 && this._bmFontSize > 0){
+        if(this._labelType === 1 && this._fontSize > 0){
             sprite.setScale(this._bmfontScale);
         }
     },
@@ -918,7 +922,7 @@ cc.Label = cc.Node.extend({
     },
     _restoreFontSize: function(){
         if(this._labelType === 1){
-            this._bmFontSize = this._originalFontSize;
+            this._fontSize = this._originalFontSize;
         }
     }
 });
