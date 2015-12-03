@@ -431,15 +431,19 @@ cc.Label = cc.Node.extend({
             }
         }
     },
-
+    setColor: function(color){
+        cc.Node.prototype.setColor.call(this, color);
+        this.on("load", function(){
+            this._renderCmd._updateColor();
+        });
+    },
     _notifyLabelSkinDirty: function() {
         this._labelSkinDirty = true;
         if(CC_EDITOR){
             this._updateContent();
             this._labelSkinDirty = false;
-        }else{
-            this._renderCmd.setDirtyFlag(cc.Node._dirtyFlags.textDirty);
         }
+        this._renderCmd.setDirtyFlag(cc.Node._dirtyFlags.textDirty);
     },
     _createRenderCmd: function() {
         if (this._labelType === 0) {

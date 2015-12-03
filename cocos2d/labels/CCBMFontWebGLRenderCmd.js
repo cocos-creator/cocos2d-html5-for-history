@@ -74,15 +74,13 @@
     proto.updateStatus = function () {
         cc.Node.WebGLRenderCmd.prototype.updateStatus.call(this);
 
-        if(!CC_EDITOR){
-            var flags = cc.Node._dirtyFlags;
-            var locFlag = this._dirtyFlag;
-            var textDirty = locFlag & flags.textDirty;
-            if(textDirty){
-                this._rebuildLabelSkin();
-            }
-            this._dirtyFlag = this._dirtyFlag & cc.Node._dirtyFlags.textDirty ^ this._dirtyFlag;
+        var flags = cc.Node._dirtyFlags;
+        var locFlag = this._dirtyFlag;
+        var textDirty = locFlag & flags.textDirty;
+        if(textDirty){
+            this._rebuildLabelSkin();
         }
+        this._dirtyFlag = this._dirtyFlag & cc.Node._dirtyFlags.textDirty ^ this._dirtyFlag;
     };
 
     proto.rendering = function(ctx){
