@@ -46,7 +46,32 @@
         }
     };
 
-    proto.updateStatus = function(){
+    proto._updateColor = function(){
+        var node = this._node;
+        if(!node._spriteBatchNode){
+            return;
+        }
+
+        var color4 = cc.color( node._renderCmd._displayedColor.r,
+                               node._renderCmd._displayedColor.g,
+                               node._renderCmd._displayedColor.b,
+                               node._renderCmd._displayedOpacity );
+
+        var textureAtlas = node._spriteBatchNode.getTextureAtlas();
+        var quads = textureAtlas.getQuads();
+        var count = textureAtlas.getTotalQuads();
+        for(var index = 0; index < count; ++index){
+            quads[index].bl.colors = color4;
+            quads[index].br.colors = color4;
+            quads[index].tl.colors = color4;
+            quads[index].tr.colors = color4;
+            textureAtlas.updateQuad(quads[index], index);
+        }
+
+
+    };
+
+    proto.updateStatus = function () {
         cc.Node.WebGLRenderCmd.prototype.updateStatus.call(this);
 
         if(!CC_EDITOR){
