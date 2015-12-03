@@ -496,6 +496,9 @@ var SpriteRenderer = cc.Class({
         node.initWithSpriteFrame(this._sprite);
         var locLoaded = this._sprite.textureLoaded();
         if (!locLoaded) {
+            if ( !this._useOriginalSize ) {
+                node.setPreferredSize(this.node.getContentSize(true));
+            }
             this._sprite.once('load', function () {
                 this._applyCapInset();
                 this._applySpriteSize();
