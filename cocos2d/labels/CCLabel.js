@@ -250,6 +250,7 @@ cc.Label = cc.Node.extend({
             this._reusedLetter.setAnchorPoint(cc.p(0,1));
         }
         this._updateContent();
+        this.setColor(this.color);
     },
 
     setHorizontalAlign: function(align) {
@@ -441,6 +442,7 @@ cc.Label = cc.Node.extend({
         this._labelSkinDirty = true;
         if(CC_EDITOR){
             this._updateContent();
+            this.setColor(this.color);
             this._labelSkinDirty = false;
         }
         this._renderCmd.setDirtyFlag(cc.Node._dirtyFlags.textDirty);

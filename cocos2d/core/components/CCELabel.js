@@ -46,7 +46,7 @@ var Label = cc.Class({
          * @property {String} string
          */
         string: {
-            default: '',
+            default: 'Label',
             notify: function () {
                 var sgNode = this._sgNode;
                 if (sgNode) {
@@ -85,7 +85,7 @@ var Label = cc.Class({
             },
         },
 
-        _fontSize: 18,
+        _fontSize: 40,
         /**
          * Font size of label
          * @property {Number} fontSize
@@ -189,6 +189,7 @@ var Label = cc.Class({
         sgNode.setOverflow( this.overflow );
         sgNode.enableWrapText( this.enableWrapText );
         sgNode.setContentSize( this.node.getContentSize() );
+        sgNode.setColor(this.node.color);
 
         return sgNode;
     },
