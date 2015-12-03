@@ -74,32 +74,27 @@ cc.EScene = cc.Class({
     },
 
     _activate: function () {
+        var i, child, children = this._children, len = children.length;
+
         if (CC_EDITOR || CC_TEST) {
             // register all nodes to editor
-            registerAllNodes(this);
+            for (i = 0; i < len; ++i) {
+                child = children[i];
+                child._registerIfAttached(true);
+            }
         }
 
         this._activeInHierarchy = true;
 
         // invoke onLoad and onEnable
-        var children = this._children;
-        for (var i = 0; i < children.length; ++i) {
-            var child = children[i];
+        for (i = 0; i < len; ++i) {
+            child = children[i];
             if (child._active) {
                 child._onActivatedInHierarchy(true);
             }
         }
     }
 });
-
-function registerAllNodes (node) {
-    var children = node._children;
-    for (var i = 0; i < children.length; ++i) {
-        var child = children[i];
-        child._registerIfAttached(true);
-        registerAllNodes(child);
-    }
-}
 
 module.exports = cc.EScene;
 

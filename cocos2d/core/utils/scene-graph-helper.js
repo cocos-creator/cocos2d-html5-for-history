@@ -8,9 +8,6 @@ var SceneGraphUtils = {
             if (node._parent) {
                 node._parent.removeChild(node);
             }
-
-            // release
-            this._sgNode.release();
             this._sgNode = null;
         }
     },

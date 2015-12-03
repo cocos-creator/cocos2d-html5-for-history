@@ -356,34 +356,38 @@ test('isChildOf', function () {
 
 
 test('attach events', function () {
-    var parent = cc.director.getScene();
+    var scene = cc.director.getScene();
+    var parent = new cc.ENode();
     var child = new cc.ENode();
 
-    var attachedNode = null;
-    var detachedNode = null;
+    var attachedNodes = {};
 
-    function onAttach (event) {
-        attachedNode = event.detail.target;
-    }
-    function onDetach (event) {
-        detachedNode = event.detail.target;
-        if (attachedNode === detachedNode) {
-            attachedNode = null;
+    var onAttach = cc.engine.on('node-attach-to-scene', function (event) {
+        if (event.detail.target.uuid in attachedNodes) {
+            ok(false, 'already attached!');
         }
-    }
-
-    cc.engine.on('node-attach-to-scene', onAttach);
-    cc.engine.on('node-detach-from-scene', onDetach);
+        attachedNodes[event.detail.target.uuid] = true;
+    });
+    var onDetach = cc.engine.on('node-detach-from-scene', function (event) {
+        if (!(event.detail.target.uuid in attachedNodes)) {
+            ok(false, 'not yet attached!');
+        }
+        delete attachedNodes[event.detail.target.uuid];
+    });
 
     child.parent = parent;
 
-    strictEqual(attachedNode, child);
-    strictEqual(detachedNode, null);
+    strictEqual(child.uuid in attachedNodes, false, 'child node should not attach scene if parent also detached');
 
-    child.parent = null;
+    parent.parent = scene;
 
-    strictEqual(attachedNode, null);
-    strictEqual(detachedNode, child);
+    strictEqual(parent.uuid in attachedNodes, true, 'parent node should attach to scene');
+    strictEqual(child.uuid in attachedNodes, true, 'child node should attach to scene');
+
+    parent.parent = null;
+
+    strictEqual(parent.uuid in attachedNodes, false, 'child node should also detached if parent become detached');
+    strictEqual(child.uuid in attachedNodes, false, 'parent node should detached');
 
     cc.engine.off('node-attach-to-scene', onAttach);
     cc.engine.off('node-detach-from-scene', onDetach);
