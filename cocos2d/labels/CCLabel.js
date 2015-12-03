@@ -244,11 +244,7 @@ cc.Label = cc.Node.extend({
     _createSpriteBatchNode: function(texture){
         this._spriteBatchNode = new cc.SpriteBatchNode(texture, this._string.length);
         this.addChild(this._spriteBatchNode);
-        if(!this._reusedLetter){
-            this._reusedLetter = new cc.Sprite();
-            this._reusedLetter.initWithTexture(this._spriteBatchNode.textureAtlas.texture);
-            this._reusedLetter.setAnchorPoint(cc.p(0,1));
-        }
+
         this._updateContent();
         this.setColor(this.color);
     },
@@ -456,6 +452,8 @@ cc.Label = cc.Node.extend({
         } else if (this._labelType === 1) {
             if (cc._renderType === cc.game.RENDER_TYPE_WEBGL) {
                 return new cc.Label.BMFontWebGLRenderCmd(this);
+            }else{
+                return new cc.Label.BMFontCanvasRenderCmd(this);
             }
 
         }
@@ -785,7 +783,6 @@ cc.Label = cc.Node.extend({
         do{
             if(!this._spriteBatchNode) return true;
 
-            this._reusedLetter.setBatchNode(this._spriteBatchNode);
 
             this._textDesiredHeight = 0;
             this._linesWidth = [];
@@ -819,7 +816,9 @@ cc.Label = cc.Node.extend({
     },
     _updateQuad: function(){
         var ret = true;
-        this._spriteBatchNode.getTextureAtlas().removeAllQuads();
+
+        this._spriteBatchNode.removeAllChildren();
+
 
         var letterClamp = false;
         for(var ctr = 0; ctr < this._string.length; ++ctr){
@@ -869,12 +868,23 @@ cc.Label = cc.Node.extend({
                 }
 
                 if(this._reusedRect.height > 0 && this._reusedRect.width > 0){
+                    var fontChar = this.getChildByTag(ctr);
+                    var locTexture = this._spriteBatchNode._renderCmd._texture || this._spriteBatchNode.textureAtlas.texture;
+
+                    if(!fontChar){
+                        fontChar = new cc.Sprite();
+                        fontChar.initWithTexture(locTexture);
+                        fontChar.setAnchorPoint(cc.p(0,1));
+                    }
+                    this._reusedLetter = fontChar;
+
                     this._reusedLetter.setTextureRect(this._reusedRect, false, this._reusedRect.size);
 
                     var letterPositionX = this._lettersInfo[ctr]._positionX + this._linesOffsetX[this._lettersInfo[ctr]._lineIndex];
                     this._reusedLetter.setPosition(letterPositionX, py);
 
-                    var index = this._spriteBatchNode.getTextureAtlas().getTotalQuads();
+                    var index = this._spriteBatchNode.getChildren().length;
+
                     this._lettersInfo[ctr]._atlasIndex = index;
 
                     this._updateLetterSpriteScale(this._reusedLetter);
