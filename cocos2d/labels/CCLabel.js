@@ -56,17 +56,17 @@ cc.FontAtlas.prototype = {
     addLetterDefinitions: function(letter, letterDefinition) {
         this._letterDefinitions[letter] = letterDefinition;
     },
-    cloneLetterDefinition: function(){
+    cloneLetterDefinition: function() {
         var copyLetterDefinitions = {};
-        for(var key in this._letterDefinitions){
+        for (var key in this._letterDefinitions) {
             var value = new cc.FontLetterDefinition();
             cc.js.mixin(value, this._letterDefinitions[key]);
             copyLetterDefinitions[key] = value;
         }
         return copyLetterDefinitions;
     },
-    assignLetterDefinitions: function(letterDefinition){
-        for(var key in this._letterDefinitions){
+    assignLetterDefinitions: function(letterDefinition) {
+        for (var key in this._letterDefinitions) {
             var newValue = letterDefinition[key];
             var oldValue = this._letterDefinitions[key];
             cc.js.mixin(oldValue, newValue);
@@ -82,19 +82,19 @@ cc.FontAtlas.prototype = {
         }
     },
 
-    getLetterDefinitionForChar: function(char){
+    getLetterDefinitionForChar: function(char) {
         var hasKey = this._letterDefinitions.hasOwnProperty(char.charCodeAt(0));
         var letterDefinition;
-        if(hasKey){
+        if (hasKey) {
             letterDefinition = this._letterDefinitions[char.charCodeAt(0)];
-        }else{
+        } else {
             letterDefinition = null;
         }
         return letterDefinition;
     }
 };
 
-cc.LetterInfo = function(){
+cc.LetterInfo = function() {
     this._char = "";
     this._valid = true;
     this._positionX = 0;
@@ -145,7 +145,7 @@ cc.Label = cc.Node.extend({
     _lineBreakWithoutSpaces: false,
     _imageOffset: null,
 
-    _reusedRect: cc.rect(0,0,0,0),
+    _reusedRect: cc.rect(0, 0, 0, 0),
 
     _textureLoaded: false,
     _className: "Label",
@@ -168,20 +168,20 @@ cc.Label = cc.Node.extend({
         //init bmfont
         if (type === 1) {
             this._initBMFontWithString(this._string, this._fontHandle);
-        }else{
+        } else {
             this.setFontFileOrFamily(fontHandle);
             this.setString(this._string);
         }
     },
 
-    isSystemFontUsed: function(){
+    isSystemFontUsed: function() {
         return this._isUseSystemFont;
     },
 
-    setSystemFontUsed: function(value){
-        if(this._isUseSystemFont === value) return;
+    setSystemFontUsed: function(value) {
+        if (this._isUseSystemFont === value) return;
 
-        if(value){
+        if (value) {
             this.setFontFileOrFamily("Arial");
         }
         this._isUseSystemFont = value;
@@ -216,14 +216,14 @@ cc.Label = cc.Node.extend({
     getString: function() {
         return this._string;
     },
-    getStringLength: function(){
+    getStringLength: function() {
         return this._string.length;
     },
 
     enableWrapText: function(enabled) {
         if (this._isWrapText === enabled) return;
         //when label is in resize mode, wrap is disabled.
-        if(this._overFlow === 2){
+        if (this._overFlow === 2) {
             return;
         }
         this._isWrapText = enabled;
@@ -234,7 +234,7 @@ cc.Label = cc.Node.extend({
     isWrapTextEnabled: function() {
         return this._isWrapText;
     },
-    getFontName: function(){
+    getFontName: function() {
         return this._fontHandle;
     },
     setFontSize: function(fntSize) {
@@ -251,7 +251,7 @@ cc.Label = cc.Node.extend({
     setOverflow: function(overflow) {
         if (this._overFlow === overflow) return;
         this._overFlow = overflow;
-        if(this._overFlow === 2){
+        if (this._overFlow === 2) {
             this._setDimensions(this._labelDimensions.width, 0);
             this.enableWrapText(true);
         }
@@ -273,8 +273,8 @@ cc.Label = cc.Node.extend({
         this._lineHeight = lineHeight;
         this._labelSkinDirty = true;
     },
-    setLineBreakWithoutSpace: function(lineBreakFlag){
-        if(this._lineBreakWithoutSpaces === lineBreakFlag) return;
+    setLineBreakWithoutSpace: function(lineBreakFlag) {
+        if (this._lineBreakWithoutSpaces === lineBreakFlag) return;
 
         this._lineBreakWithoutSpaces = lineBreakFlag;
         this._notifyLabelSkinDirty();
@@ -287,14 +287,14 @@ cc.Label = cc.Node.extend({
         return this._lineHeight;
     },
 
-    setFontFileOrFamily: function( fontHandle ) {
+    setFontFileOrFamily: function(fontHandle) {
         fontHandle = fontHandle || "Arial";
         var extName = cc.path.extname(fontHandle);
 
         this._resetBMFont();
         this.setLineHeight(0);
         //specify font family name directly
-        if( extName === null) {
+        if (extName === null) {
             this._fontHandle = fontHandle;
             this._labelType = 0;
             this._notifyLabelSkinDirty();
@@ -305,39 +305,39 @@ cc.Label = cc.Node.extend({
         fontHandle = cc.path.join(cc.loader.resPath, fontHandle);
 
         this._isUseSystemFont = false;
-        if(extName === ".ttf") {
+        if (extName === ".ttf") {
             this._labelType = 0;
             this._fontHandle = this._loadTTFFont(fontHandle);
-        }
-        else if(extName === ".fnt"){
+        } else if (extName === ".fnt") {
             //todo add bmfont here
             this._labelType = 1;
             this._initBMFontWithString(this._string, fontHandle);
         }
     },
 
-    _loadTTFFont : function(fontHandle){
+    _loadTTFFont: function(fontHandle) {
         var ttfIndex = fontHandle.lastIndexOf(".ttf");
-        if(ttfIndex === -1) return fontHandle;
+        if (ttfIndex === -1) return fontHandle;
         var slashPos = fontHandle.lastIndexOf("/");
         var fontFamilyName;
-        if(slashPos === -1) fontFamilyName = fontHandle.substring(0,ttfIndex ) + "_LABEL";
+        if (slashPos === -1) fontFamilyName = fontHandle.substring(0, ttfIndex) + "_LABEL";
         else fontFamilyName = fontHandle.substring(slashPos + 1, ttfIndex) + "_LABEL";
         var self = this;
-        if(FontFace) {
+        if (FontFace) {
             var fontFace = new FontFace(fontFamilyName, "url('" + fontHandle + "')");
-            fontFace.load().then( function (loadedFace) {
+            fontFace.load().then(function(loadedFace) {
                 document.fonts.add(loadedFace);
                 self._notifyLabelSkinDirty();
             });
         } else {
             //fall back implementations
-            var doc = document, fontStyle = document.createElement("style");
+            var doc = document,
+                fontStyle = document.createElement("style");
             fontStyle.type = "text/css";
             doc.body.appendChild(fontStyle);
 
             var fontStr = "";
-            if(isNaN(fontFamilyName - 0))
+            if (isNaN(fontFamilyName - 0))
                 fontStr += "@font-face { font-family:" + fontFamilyName + "; src:";
             else
                 fontStr += "@font-face { font-family:'" + fontFamilyName + "'; src:";
@@ -348,14 +348,14 @@ cc.Label = cc.Node.extend({
 
             //<div style="font-family: PressStart;">.</div>
             var preloadDiv = document.createElement("div");
-            var _divStyle =  preloadDiv.style;
+            var _divStyle = preloadDiv.style;
             _divStyle.fontFamily = fontFamilyName;
             preloadDiv.innerHTML = ".";
             _divStyle.position = "absolute";
             _divStyle.left = "-100px";
             _divStyle.top = "-100px";
             doc.body.appendChild(preloadDiv);
-            self.scheduleOnce(self._notifyLabelSkinDirty,2);
+            self.scheduleOnce(self._notifyLabelSkinDirty, 2);
         }
 
         return fontFamilyName;
@@ -364,24 +364,28 @@ cc.Label = cc.Node.extend({
     setContentSize: function(size, height) {
         var oldWidth = this._contentSize.width;
         var oldHeight = this._contentSize.height;
-        if(this._labelType === 0){
-            cc.Node.prototype.setContentSize.call(this, size,height);
+        if (this._labelType === 0) {
+            cc.Node.prototype.setContentSize.call(this, size, height);
             if (oldWidth === this._contentSize.width && oldHeight === this._contentSize.height) {
                 return;
             }
             this._notifyLabelSkinDirty();
-        }else if (this._labelType === 1){
-            if(!height){
-                if(oldWidth === size.width && oldHeight === size.height) return;
+        } else if (this._labelType === 1) {
+            if (!height) {
+                if (oldWidth === size.width && oldHeight === size.height) {
+                    return;
+                }
                 this._setDimensions(size.width, size.height);
-            }else{
-                if(oldWidth === size && oldHeight === height) return;
+            } else {
+                if (oldWidth === size && oldHeight === height) {
+                    return;
+                }
                 this._setDimensions(size, height);
             }
         }
     },
 
-    setBlendFunc: function (src, dst) {
+    setBlendFunc: function(src, dst) {
         var locBlendFunc = this._blendFunc;
         if (dst === undefined) {
             locBlendFunc.src = src.src;
@@ -398,17 +402,21 @@ cc.Label = cc.Node.extend({
     },
 
     _notifyLabelSkinDirty: function() {
-        if(!CC_EDITOR){
-            this._labelSkinDirty = true;
-            if(this._renderCmd)
-                this._renderCmd.setDirtyFlag(cc.Node._dirtyFlags.textDirty);
-        }
-
-        if(this._labelType === 1){
-            if(CC_EDITOR){
+        if (CC_EDITOR) {
+            if (this._labelType === 1) {
                 this._updateContent();
                 this.setColor(this.color);
                 this._labelSkinDirty = false;
+            } else if (this._labelType === 0) {
+                this._labelSkinDirty = true;
+                if (this._renderCmd) {
+                    this._renderCmd.setDirtyFlag(cc.Node._dirtyFlags.textDirty);
+                }
+            }
+        } else {
+            this._labelSkinDirty = true;
+            if (this._renderCmd) {
+                this._renderCmd.setDirtyFlag(cc.Node._dirtyFlags.textDirty);
             }
         }
     },
@@ -419,66 +427,66 @@ cc.Label = cc.Node.extend({
             return new cc.Label.CanvasRenderCmd(this);
     },
 
-    getContentSize: function(foreceUpdate){
-        if(foreceUpdate){
-            if(this._labelType === 1 && this._labelSkinDirty){
+    getContentSize: function(foreceUpdate) {
+        if (foreceUpdate) {
+            if (this._labelType === 1 && this._labelSkinDirty) {
                 this._updateContent();
             }
             return this._contentSize;
-        }else{
+        } else {
             return cc.Node.prototype.getContentSize.call(this);
         }
     }
 });
 
 cc.BMFontHelper = {
-    alignText: function(){
+    alignText: function() {
         var ret = true;
 
-        do{
-            if(!this._spriteBatchNode) return true;
+        do {
+            if (!this._spriteBatchNode) return true;
 
 
             this._textDesiredHeight = 0;
             this._linesWidth = [];
-            if(this._maxLineWidth > 0 && !this._lineBreakWithoutSpaces){
+            if (this._maxLineWidth > 0 && !this._lineBreakWithoutSpaces) {
                 this.multilineTextWrapByWord();
-            }else{
+            } else {
                 this.multilineTextWrapByChar();
             }
 
             this._computeAlignmentOffset();
 
             //shrink
-            if(this._overFlow === 1){
+            if (this._overFlow === 1) {
                 var fontSize = this.getFontSize();
 
-                if(fontSize > 0 && this.isVerticalClamp()){
+                if (fontSize > 0 && this.isVerticalClamp()) {
                     this._shrinkLabelToContentSize(this.isVerticalClamp.bind(this));
                 }
             }
 
-            if(!this._updateQuad()){
+            if (!this._updateQuad()) {
                 ret = false;
-                if(!this._isWrapText && this._overFlow === 1){
+                if (!this._isWrapText && this._overFlow === 1) {
                     this._shrinkLabelToContentSize(this.isHorizontalClamp.bind(this));
                 }
                 break;
             }
-        }while(0);
+        } while (0);
 
         return ret;
     },
 
-    _updateQuad: function(){
+    _updateQuad: function() {
         var ret = true;
 
         this._spriteBatchNode.removeAllChildren();
 
 
         var letterClamp = false;
-        for(var ctr = 0; ctr < this._string.length; ++ctr){
-            if(this._lettersInfo[ctr]._valid){
+        for (var ctr = 0; ctr < this._string.length; ++ctr) {
+            if (this._lettersInfo[ctr]._valid) {
                 var letterDef = this._fontAtlas._letterDefinitions[this._lettersInfo[ctr]._char];
 
                 this._reusedRect.height = letterDef._height;
@@ -488,33 +496,33 @@ cc.BMFontHelper = {
 
                 var py = this._lettersInfo[ctr]._positionY + this._letterOffsetY;
 
-                if(this._labelHeight > 0){
-                    if(py > this._tailoredTopY){
+                if (this._labelHeight > 0) {
+                    if (py > this._tailoredTopY) {
                         var clipTop = py - this._tailoredTopY;
                         this._reusedRect.y += clipTop;
                         this._reusedRect.height -= clipTop;
                         py = py - clipTop;
                     }
 
-                    if(py - letterDef._height * this._bmfontScale < this._tailoredBottomY){
+                    if (py - letterDef._height * this._bmfontScale < this._tailoredBottomY) {
                         this._reusedRect.height = (py < this._tailoredBottomY) ? 0 : (py - this._tailoredBottomY);
                     }
                 }
 
-                if(!this._isWrapText){
+                if (!this._isWrapText) {
                     var px = this._lettersInfo[ctr]._positionX + letterDef._width / 2 * this._bmfontScale + this._linesOffsetX[this._lettersInfo[ctr]._lineIndex];
 
-                    if(this._labelWidth > 0){
-                        if(px > this._contentSize.width || px < 0){
+                    if (this._labelWidth > 0) {
+                        if (px > this._contentSize.width || px < 0) {
                             //0 is Clamp, 1 is shrink, 2 is resize
-                            if(this._overFlow === 0){
+                            if (this._overFlow === 0) {
                                 this._reusedRect.width = 0;
-                            }else if(this._overFlow === 1){
-                                if(letterDef._width > 0 && this._contentSize.width > letterDef._width){
+                            } else if (this._overFlow === 1) {
+                                if (letterDef._width > 0 && this._contentSize.width > letterDef._width) {
                                     letterClamp = true;
                                     ret = false;
                                     break;
-                                }else{
+                                } else {
                                     //clamp
                                     this._reusedRect.width = 0;
                                 }
@@ -523,14 +531,14 @@ cc.BMFontHelper = {
                     }
                 }
 
-                if(this._reusedRect.height > 0 && this._reusedRect.width > 0){
+                if (this._reusedRect.height > 0 && this._reusedRect.width > 0) {
                     var fontChar = this.getChildByTag(ctr);
                     var locTexture = this._spriteBatchNode._renderCmd._texture || this._spriteBatchNode.textureAtlas.texture;
 
-                    if(!fontChar){
+                    if (!fontChar) {
                         fontChar = new cc.Sprite();
                         fontChar.initWithTexture(locTexture);
-                        fontChar.setAnchorPoint(cc.p(0,1));
+                        fontChar.setAnchorPoint(cc.p(0, 1));
                     }
 
                     fontChar.setTextureRect(this._reusedRect, false, this._reusedRect.size);
@@ -554,14 +562,14 @@ cc.BMFontHelper = {
         return ret;
     },
 
-    _updateLetterSpriteScale: function(sprite){
-        if(this._labelType === 1 && this._fontSize > 0){
+    _updateLetterSpriteScale: function(sprite) {
+        if (this._labelType === 1 && this._fontSize > 0) {
             sprite.setScale(this._bmfontScale);
         }
     },
 
-    _recordPlaceholderInfo: function(letterIndex, char){
-        if(letterIndex >= this._lettersInfo.length){
+    _recordPlaceholderInfo: function(letterIndex, char) {
+        if (letterIndex >= this._lettersInfo.length) {
             var tmpInfo = new cc.LetterInfo();
             this._lettersInfo.push(tmpInfo);
         }
@@ -570,8 +578,8 @@ cc.BMFontHelper = {
         this._lettersInfo[letterIndex]._valid = false;
     },
 
-    _recordLetterInfo: function(letterPosition, character, letterIndex, lineIndex){
-        if(letterIndex >= this._lettersInfo.length){
+    _recordLetterInfo: function(letterPosition, character, letterIndex, lineIndex) {
+        if (letterIndex >= this._lettersInfo.length) {
             var tmpInfo = new cc.LetterInfo();
             this._lettersInfo.push(tmpInfo);
         }
@@ -584,19 +592,19 @@ cc.BMFontHelper = {
         this._lettersInfo[letterIndex]._positionY = letterPosition.y;
     },
 
-    _setDimensions: function(width, height){
-        if(this._overFlow === 2){
+    _setDimensions: function(width, height) {
+        if (this._overFlow === 2) {
             height = 0;
         }
-        if(height !== this._labelHeight || width !== this._labelWidth){
+        if (height !== this._labelHeight || width !== this._labelWidth) {
             this._labelWidth = width;
             this._labelHeight = height;
             this._labelDimensions.width = width;
             this._labelDimensions.height = height;
 
             this._maxLineWidth = width;
-            if(this._overFlow === 1){
-                if(this._originalFontSize > 0){
+            if (this._overFlow === 1) {
+                if (this._originalFontSize > 0) {
                     this._restoreFontSize();
                 }
             }
@@ -604,13 +612,13 @@ cc.BMFontHelper = {
         }
     },
 
-    _restoreFontSize: function(){
-        if(this._labelType === 1){
+    _restoreFontSize: function() {
+        if (this._labelType === 1) {
             this._fontSize = this._originalFontSize;
         }
     },
 
-    _multilineTextWrap: function(nextTokenFunc){
+    _multilineTextWrap: function(nextTokenFunc) {
         var textLen = this.getStringLength();
         var lineIndex = 0;
         var nextTokenX = 0;
@@ -623,13 +631,13 @@ cc.BMFontHelper = {
         var highestY = 0;
         var lowestY = 0;
         var letterDef = null;
-        var letterPosition = cc.p(0,0);
+        var letterPosition = cc.p(0, 0);
 
         this._updateBMFontScale();
 
-        for(var index = 0; index < textLen;){
+        for (var index = 0; index < textLen;) {
             var character = this._string.charAt(index);
-            if(character === "\n"){
+            if (character === "\n") {
                 this._linesWidth.push(letterRight);
                 letterRight = 0;
                 lineIndex++;
@@ -647,27 +655,27 @@ cc.BMFontHelper = {
             var nextLetterX = nextTokenX;
             var newLine = false;
 
-            for(var tmp = 0; tmp < tokenLen; ++tmp){
+            for (var tmp = 0; tmp < tokenLen; ++tmp) {
                 var letterIndex = index + tmp;
                 character = this._string.charAt(letterIndex);
-                if(character === "\r"){
+                if (character === "\r") {
                     this._recordPlaceholderInfo(letterIndex, character);
                     continue;
                 }
                 letterDef = this._fontAtlas.getLetterDefinitionForChar(character);
-                if(!letterDef){
+                if (!letterDef) {
                     this._recordPlaceholderInfo(letterIndex, character);
                     console.log("Can't find letter definition in font file for letter:" + character);
                     continue;
                 }
 
                 var letterX = (nextLetterX + letterDef._offsetX * this._bmfontScale) / contentScaleFactor;
-                if(letterX <= this._labelWidth){
+                if (letterX <= this._labelWidth) {
                     this._lineBreakWithoutSpaces = true;
-                }else{
+                } else {
                     this._lineBreakWithoutSpaces = false;
                 }
-                if(this._isWrapText && this._maxLineWidth > 0 && nextTokenX > 0 && letterX + letterDef._width * this._bmfontScale > this._maxLineWidth){
+                if (this._isWrapText && this._maxLineWidth > 0 && nextTokenX > 0 && letterX + letterDef._width * this._bmfontScale > this._maxLineWidth) {
                     this._linesWidth.push(letterRight);
                     letterRight = 0;
                     lineIndex++;
@@ -675,14 +683,14 @@ cc.BMFontHelper = {
                     nextTokenY -= (this._lineHeight * this._bmfontScale + lineSpacing);
                     newLine = true;
                     break;
-                }else{
+                } else {
                     letterPosition.x = letterX;
                 }
 
                 letterPosition.y = (nextTokenY - letterDef._offsetY * this._bmfontScale) / contentScaleFactor;
                 this._recordLetterInfo(letterPosition, character, letterIndex, lineIndex);
 
-                if(letterIndex + 1 < this._horizontalKernings.length && letterIndex < textLen - 1){
+                if (letterIndex + 1 < this._horizontalKernings.length && letterIndex < textLen - 1) {
                     nextLetterX += this._horizontalKernings[letterIndex + 1];
                 }
 
@@ -690,28 +698,28 @@ cc.BMFontHelper = {
 
                 tokenRight = letterPosition.x + letterDef._width * this._bmfontScale;
 
-                if(tokenHighestY < letterPosition.y){
+                if (tokenHighestY < letterPosition.y) {
                     tokenHighestY = letterPosition.y;
                 }
 
-                if(tokenLowestY > letterPosition.y - letterDef._height * this._bmfontScale){
+                if (tokenLowestY > letterPosition.y - letterDef._height * this._bmfontScale) {
                     tokenLowestY = letterPosition.y - letterDef._height * this._bmfontScale;
                 }
 
             } //end of for loop
 
-            if(newLine) continue;
+            if (newLine) continue;
 
             nextTokenX = nextLetterX;
             letterRight = tokenRight;
 
-            if(highestY < tokenHighestY){
+            if (highestY < tokenHighestY) {
                 highestY = tokenHighestY;
             }
-            if(lowestY > tokenLowestY){
+            if (lowestY > tokenLowestY) {
                 lowestY = tokenLowestY;
             }
-            if(longestLine < letterRight){
+            if (longestLine < letterRight) {
                 longestLine = letterRight;
             }
 
@@ -722,57 +730,57 @@ cc.BMFontHelper = {
 
         this._numberOfLines = lineIndex + 1;
         this._textDesiredHeight = (this._numberOfLines * this._lineHeight * this._bmfontScale) / contentScaleFactor;
-        if(this._numberOfLines > 1){
+        if (this._numberOfLines > 1) {
             this._textDesiredHeight += (this._numberOfLines - 1) * this._lineSpacing;
         }
 
         var contentSize = cc.size(this._labelWidth, this._labelHeight);
-        if(this._labelWidth <= 0){
+        if (this._labelWidth <= 0) {
             contentSize.width = longestLine;
         }
-        if(this._labelHeight <= 0){
+        if (this._labelHeight <= 0) {
             contentSize.height = this._textDesiredHeight;
         }
         cc.Node.prototype.setContentSize.call(this, contentSize);
 
         this._tailoredTopY = contentSize.height;
         this._tailoredBottomY = 0;
-        if(highestY > 0){
+        if (highestY > 0) {
             this._tailoredTopY = contentSize.height + highestY;
         }
-        if(lowestY < -this._textDesiredHeight){
+        if (lowestY < -this._textDesiredHeight) {
             this._tailoredBottomY = this._textDesiredHeight + lowestY;
         }
 
         return true;
     },
 
-    multilineTextWrapByWord: function(){
+    multilineTextWrapByWord: function() {
         return this._multilineTextWrap(this._getFirstWordLen.bind(this));
     },
 
-    multilineTextWrapByChar: function(){
+    multilineTextWrapByChar: function() {
         return this._multilineTextWrap(this._getFirstCharLen.bind(this));
     },
 
-    isVerticalClamp: function(){
-        if(this._textDesiredHeight > this._contentSize.height){
+    isVerticalClamp: function() {
+        if (this._textDesiredHeight > this._contentSize.height) {
             return true;
-        }else{
+        } else {
             return false;
         }
     },
 
-    isHorizontalClamp: function(){
+    isHorizontalClamp: function() {
         var letterClamp = false;
 
-        for(var ctr = 0; ctr < this.getStringLength(); ++ctr){
-            if(this._lettersInfo[ctr]._valid){
+        for (var ctr = 0; ctr < this.getStringLength(); ++ctr) {
+            if (this._lettersInfo[ctr]._valid) {
                 var letterDef = this._fontAtlas._letterDefinitions[this._lettersInfo[ctr]._char];
 
                 var px = this._lettersInfo[ctr]._positionX + letterDef._width / 2 * this._bmfontScale;
-                if(this._labelWidth > 0){
-                    if(px > this._contentSize.width){
+                if (this._labelWidth > 0) {
+                    if (px > this._contentSize.width) {
                         letterClamp = true;
                         break;
                     }
@@ -783,7 +791,7 @@ cc.BMFontHelper = {
         return letterClamp;
     },
 
-    _shrinkLabelToContentSize: function(lambda){
+    _shrinkLabelToContentSize: function(lambda) {
         var fontSize = this.getFontSize();
 
         var i = 0;
@@ -791,12 +799,12 @@ cc.BMFontHelper = {
         var originalLineHeight = this._lineHeight;
         var flag = true;
 
-        while(lambda()){
+        while (lambda()) {
             ++i;
 
             var newFontSize = fontSize - i;
             flag = false;
-            if(newFontSize <= 0){
+            if (newFontSize <= 0) {
                 break;
             }
 
@@ -804,9 +812,9 @@ cc.BMFontHelper = {
             this._fontAtlas.assignLetterDefinitions(tempLetterDefinition);
             this._fontAtlas.scaleFontLetterDefinition(scale);
             this.setLineHeight(originalLineHeight * scale);
-            if(this._maxLineWidth > 0 && !this._lineBreakWithoutSpaces){
+            if (this._maxLineWidth > 0 && !this._lineBreakWithoutSpaces) {
                 this.multilineTextWrapByWord();
-            }else{
+            } else {
                 this.multilineTextWrapByChar();
             }
             this._computeAlignmentOffset();
@@ -815,44 +823,44 @@ cc.BMFontHelper = {
         this.setLineHeight(originalLineHeight);
         this._fontAtlas.assignLetterDefinitions(tempLetterDefinition);
 
-        if(!flag){
-            if(fontSize -i >= 0){
+        if (!flag) {
+            if (fontSize - i >= 0) {
                 this._scaleFontSizeDown(fontSize - i);
             }
         }
     },
 
-    _scaleFontSizeDown: function(fontSize){
+    _scaleFontSizeDown: function(fontSize) {
         var shouldUpdateContent = true;
         //1 is BMFont
-        if(this._labelType === 1){
-            if(!fontSize){
+        if (this._labelType === 1) {
+            if (!fontSize) {
                 fontSize = 0.1;
                 shouldUpdateContent = false;
             }
             this._fontSize = fontSize;
         }
-        if(shouldUpdateContent){
+        if (shouldUpdateContent) {
             this._updateContent();
         }
     },
 
-    _updateContent: function(){
+    _updateContent: function() {
         var updateFinished = true;
 
-        if(this._fontAtlas){
+        if (this._fontAtlas) {
             this._computeHorizontalKerningForText(this._string);
             updateFinished = this.alignText();
         }
-        if(updateFinished){
+        if (updateFinished) {
             this._labelSkinDirty = false;
         }
     },
 
-    _resetBMFont: function(){
+    _resetBMFont: function() {
         this._fontAtlas = null;
         this._config = null;
-        if(this._spriteBatchNode){
+        if (this._spriteBatchNode) {
             this.removeChild(this._spriteBatchNode);
             this._spriteBatchNode = null;
         }
@@ -895,11 +903,11 @@ cc.BMFontHelper = {
         }
     },
 
-    _getFirstCharLen: function(text, startIndex, textLen){
+    _getFirstCharLen: function(text, startIndex, textLen) {
         return 1;
     },
 
-    _isCJK_unicode: function(ch){
+    _isCJK_unicode: function(ch) {
         var __CHINESE_REG = /^[\u4E00-\u9FFF\u3400-\u4DFF]+$/;
         var __JAPANESE_REG = /[\u3000-\u303F]|[\u3040-\u309F]|[\u30A0-\u30FF]|[\uFF00-\uFFEF]|[\u4E00-\u9FAF]|[\u2605-\u2606]|[\u2190-\u2195]|\u203B/g;
         var __KOREAN_REG = /^[\u1100-\u11FF]|[\u3130-\u318F]|[\uA960-\uA97F]|[\uAC00-\uD7AF]|[\uD7B0-\uD7FF]+$/;
@@ -907,23 +915,21 @@ cc.BMFontHelper = {
     },
 
     //Checking whether the character is a whitespace
-    _isspace_unicode: function(ch){
+    _isspace_unicode: function(ch) {
         ch = ch.charCodeAt(0);
-        return  ((ch >= 9 && ch <= 13) || ch === 32 || ch === 133 || ch === 160 || ch === 5760
-                 || (ch >= 8192 && ch <= 8202) || ch === 8232 || ch === 8233 || ch === 8239
-                 || ch === 8287 || ch === 12288);
+        return ((ch >= 9 && ch <= 13) || ch === 32 || ch === 133 || ch === 160 || ch === 5760 || (ch >= 8192 && ch <= 8202) || ch === 8232 || ch === 8233 || ch === 8239 || ch === 8287 || ch === 12288);
     },
 
-    _getFirstWordLen: function(text, startIndex, textLen){
+    _getFirstWordLen: function(text, startIndex, textLen) {
         var character = text.charAt(startIndex);
-        if(this._isCJK_unicode(character) || character === "\n" || this._isspace_unicode(character)){
+        if (this._isCJK_unicode(character) || character === "\n" || this._isspace_unicode(character)) {
             return 1;
         }
 
         var len = 1;
-        for(var index = startIndex + 1; index < textLen; ++index){
+        for (var index = startIndex + 1; index < textLen; ++index) {
             character = text.charAt(index);
-            if(character === "\n" || this._isspace_unicode(character) || this._isCJK_unicode(character)){
+            if (character === "\n" || this._isspace_unicode(character) || this._isCJK_unicode(character)) {
                 break;
             }
             len++;
@@ -932,11 +938,11 @@ cc.BMFontHelper = {
         return len;
     },
 
-    _updateBMFontScale: function(){
+    _updateBMFontScale: function() {
         var originalFontSize = this._fontAtlas._fontSize;
-        if(this._labelType === 1){
+        if (this._labelType === 1) {
             this._bmfontScale = this._fontSize * cc.contentScaleFactor() / originalFontSize;
-        }else{
+        } else {
             this._bmfontScale = 1;
         }
 
@@ -955,7 +961,7 @@ cc.BMFontHelper = {
         this.setBMFontFile(fntFile);
     },
 
-    _createSpriteBatchNode: function(texture){
+    _createSpriteBatchNode: function(texture) {
         this._spriteBatchNode = new cc.SpriteBatchNode(texture, this._string.length);
         this._spriteBatchNode.setCascadeColorEnabled(true);
         this._spriteBatchNode.setCascadeOpacityEnabled(true);
@@ -973,7 +979,7 @@ cc.BMFontHelper = {
         this._fontAtlas = new cc.FontAtlas(this._config);
 
         this._lineHeight = this._fontAtlas._lineHeight;
-        if(this._initFontSizeFromFile){
+        if (this._initFontSizeFromFile) {
             this.setFontSize(this._fontAtlas._fontSize);
         }
 
@@ -1002,43 +1008,43 @@ cc.BMFontHelper = {
         }
     },
 
-    _rescaleWithOriginalFontSize: function(){
+    _rescaleWithOriginalFontSize: function() {
         var renderingFontSize = this.getFontSize();
         if (this._originalFontSize - renderingFontSize >= 1) {
             this._scaleFontSizeDown(this._originalFontSize);
         }
     },
 
-    _computeHorizontalKerningForText: function(text){
+    _computeHorizontalKerningForText: function(text) {
         var stringLen = this.getStringLength();
         var locKerningDict = this._config.kerningDict;
 
         var prev = -1;
-        for(var i = 0; i < stringLen; ++i){
+        for (var i = 0; i < stringLen; ++i) {
             var key = this._string.charCodeAt(i);
             var kerningAmount = locKerningDict[(prev << 16) | (key & 0xffff)] || 0;
-            if(i < stringLen - 1){
+            if (i < stringLen - 1) {
                 this._horizontalKernings[i] = kerningAmount;
-            }else{
+            } else {
                 this._horizontalKernings[i] = 0;
             }
             prev = key;
         }
     },
 
-    setBMFontFile: function(filename){
-        if(filename){
+    setBMFontFile: function(filename) {
+        if (filename) {
             this._fontHandle = filename;
             var self = this;
-            if(this._labelType === 1){
+            if (this._labelType === 1) {
                 //try to release the previous resource
-                if(this._config && this._spriteBatchNode && this._fontAtlas){
+                if (this._config && this._spriteBatchNode && this._fontAtlas) {
                     this._resetBMFont();
                 }
 
                 var texture;
-                cc.loader.load(this._fontHandle, function(err, results){
-                    if(err){
+                cc.loader.load(this._fontHandle, function(err, results) {
+                    if (err) {
                         cc.log("cc.Label._initBMFontWithString(): Impossible to create font. Please check file");
                     }
 
