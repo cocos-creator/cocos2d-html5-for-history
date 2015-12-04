@@ -46,45 +46,21 @@
         }
     };
 
-    proto._updateColor = function(){
-        var node = this._node;
-        if(!node._spriteBatchNode || cc._renderType === cc.game.RENDER_TYPE_CANVAS){
-            return;
-        }
-
-        var color4 = cc.color( node._renderCmd._displayedColor.r,
-                               node._renderCmd._displayedColor.g,
-                               node._renderCmd._displayedColor.b,
-                               node._renderCmd._displayedOpacity );
-
-        var textureAtlas = node._spriteBatchNode.getTextureAtlas();
-        var quads = textureAtlas.getQuads();
-        var count = textureAtlas.getTotalQuads();
-        for(var index = 0; index < count; ++index){
-            quads[index].bl.colors = color4;
-            quads[index].br.colors = color4;
-            quads[index].tl.colors = color4;
-            quads[index].tr.colors = color4;
-            textureAtlas.updateQuad(quads[index], index);
-        }
-
-
-    };
-
     proto.updateStatus = function () {
         cc.Node.CanvasRenderCmd.prototype.updateStatus.call(this);
 
+        var node = this._node;
         var flags = cc.Node._dirtyFlags;
         var locFlag = this._dirtyFlag;
         var textDirty = locFlag & flags.textDirty;
         if(textDirty){
             this._rebuildLabelSkin();
         }
-        this._dirtyFlag = this._dirtyFlag & cc.Node._dirtyFlags.textDirty ^ this._dirtyFlag;
+
+        this._dirtyFlag = 0;
     };
 
     proto.rendering = function(ctx){
-        var node = this._node;
     };
 
 })();

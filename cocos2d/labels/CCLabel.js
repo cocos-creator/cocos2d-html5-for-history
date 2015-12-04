@@ -243,6 +243,8 @@ cc.Label = cc.Node.extend({
     },
     _createSpriteBatchNode: function(texture){
         this._spriteBatchNode = new cc.SpriteBatchNode(texture, this._string.length);
+        this._spriteBatchNode.setCascadeColorEnabled(true);
+        this._spriteBatchNode.setCascadeOpacityEnabled(true);
         this.addChild(this._spriteBatchNode);
 
         this._updateContent();
@@ -428,12 +430,7 @@ cc.Label = cc.Node.extend({
             }
         }
     },
-    setColor: function(color){
-        cc.Node.prototype.setColor.call(this, color);
-        this.on("load", function(){
-            this._renderCmd._updateColor();
-        });
-    },
+
     _notifyLabelSkinDirty: function() {
         this._labelSkinDirty = true;
         if(CC_EDITOR){
@@ -889,7 +886,9 @@ cc.Label = cc.Node.extend({
 
                     this._updateLetterSpriteScale(this._reusedLetter);
 
-                    this._spriteBatchNode.insertQuadFromSprite(this._reusedLetter, index);
+                    // this._spriteBatchNode.insertQuadFromSprite(this._reusedLetter, index);
+                    this._spriteBatchNode.addChild(this._reusedLetter);
+
                 }
             }
         }
