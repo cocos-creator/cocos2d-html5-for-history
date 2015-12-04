@@ -148,7 +148,6 @@ cc.Label = cc.Node.extend({
     _lineBreakWithoutSpaces: false,
     _imageOffset: null,
 
-    _reusedLetter: null,
     _reusedRect: cc.rect(0,0,0,0),
 
     _textureLoaded: false,
@@ -424,6 +423,7 @@ cc.Label = cc.Node.extend({
         var extName = cc.path.extname(fontHandle);
 
         this._resetBMFont();
+        this.setLineHeight(0);
         //specify font family name directly
         if( extName === null) {
             this._fontHandle = fontHandle;
@@ -438,7 +438,6 @@ cc.Label = cc.Node.extend({
         this._isUseSystemFont = false;
         if(extName === ".ttf") {
             this._labelType = 0;
-            this.setLineHeight(0);
             this._fontHandle = this._loadTTFFont(fontHandle);
         }
         else if(extName === ".fnt"){
@@ -481,7 +480,7 @@ cc.Label = cc.Node.extend({
             //<div style="font-family: PressStart;">.</div>
             var preloadDiv = document.createElement("div");
             var _divStyle =  preloadDiv.style;
-            _divStyle.fontFamily = name;
+            _divStyle.fontFamily = fontFamilyName;
             preloadDiv.innerHTML = ".";
             _divStyle.position = "absolute";
             _divStyle.left = "-100px";
@@ -689,6 +688,11 @@ cc.Label = cc.Node.extend({
                 }
 
                 var letterX = (nextLetterX + letterDef._offsetX * this._bmfontScale) / contentScaleFactor;
+                if(letterX <= this._labelWidth){
+                    this._lineBreakWithoutSpaces = true;
+                }else{
+                    this._lineBreakWithoutSpaces = false;
+                }
                 if(this._isWrapText && this._maxLineWidth > 0 && nextTokenX > 0 && letterX + letterDef._width * this._bmfontScale > this._maxLineWidth){
                     this._linesWidth.push(letterRight);
                     letterRight = 0;
@@ -964,21 +968,20 @@ cc.Label = cc.Node.extend({
                         fontChar.initWithTexture(locTexture);
                         fontChar.setAnchorPoint(cc.p(0,1));
                     }
-                    this._reusedLetter = fontChar;
 
-                    this._reusedLetter.setTextureRect(this._reusedRect, false, this._reusedRect.size);
+                    fontChar.setTextureRect(this._reusedRect, false, this._reusedRect.size);
 
                     var letterPositionX = this._lettersInfo[ctr]._positionX + this._linesOffsetX[this._lettersInfo[ctr]._lineIndex];
-                    this._reusedLetter.setPosition(letterPositionX, py);
+                    fontChar.setPosition(letterPositionX, py);
 
-                    var index = this._spriteBatchNode.getChildren().length;
+                    var index = this._spriteBatchNode.getChildrenCount();
 
                     this._lettersInfo[ctr]._atlasIndex = index;
 
-                    this._updateLetterSpriteScale(this._reusedLetter);
+                    this._updateLetterSpriteScale(fontChar);
 
                     // this._spriteBatchNode.insertQuadFromSprite(this._reusedLetter, index);
-                    this._spriteBatchNode.addChild(this._reusedLetter);
+                    this._spriteBatchNode.addChild(fontChar);
 
                 }
             }
