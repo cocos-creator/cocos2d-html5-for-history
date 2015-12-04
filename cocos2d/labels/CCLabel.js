@@ -116,7 +116,6 @@ cc.Label = cc.Node.extend({
     _isWrapText: true,
     _numberOfLines: 0,
     _spacingX: 0,
-    _spacingY: 0,
     _lettersInfo: [],
     //add variables for layout
     _linesWidth: [],
@@ -392,10 +391,10 @@ cc.Label = cc.Node.extend({
             this._notifyLabelSkinDirty();
     },
 
-    setLineHeight: function(spacing) {
-        if (this._spacingY === spacing) return;
-        this._spacingY = spacing;
-        this._notifyLabelSkinDirty();
+    setLineHeight: function(lineHeight) {
+        if (this._lineHeight === lineHeight) return;
+        this._lineHeight = lineHeight;
+        this._labelSkinDirty = true;
     },
     setLineBreakWithoutSpace: function(lineBreakFlag){
         if(this._lineBreakWithoutSpaces === lineBreakFlag) return;
@@ -408,7 +407,7 @@ cc.Label = cc.Node.extend({
     },
 
     getLineHeight: function() {
-        return this._spacingY;
+        return this._lineHeight;
     },
 
     setContentSize: function(size, height) {
