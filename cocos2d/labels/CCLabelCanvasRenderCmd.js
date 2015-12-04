@@ -258,7 +258,7 @@
 })();
 
 (function() {
-    cc.Label.TTFCanvasRenderCmd = function(renderableObject) {
+    cc.Label.CanvasRenderCmd = function(renderableObject) {
         cc.Node.CanvasRenderCmd.call(this, renderableObject);
         this._needDraw = true;
         this._labelTexture = new cc.Texture2D();
@@ -273,10 +273,10 @@
         this._drawFontsize = 0;
     };
 
-    var proto = cc.Label.TTFCanvasRenderCmd.prototype = Object.create(cc.Node.CanvasRenderCmd.prototype);
+    var proto = cc.Label.CanvasRenderCmd.prototype = Object.create(cc.Node.CanvasRenderCmd.prototype);
     cc.js.mixin(proto, cc.Label.TTFLabelBaker.prototype);
 
-    proto.constructor = cc.Label.TTFCanvasRenderCmd;
+    proto.constructor = cc.Label.CanvasRenderCmd;
 
     proto.rendering = function(ctx, scaleX, scaleY) {
         this._rebuildLabelSkin();
