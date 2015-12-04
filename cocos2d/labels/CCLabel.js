@@ -127,11 +127,11 @@ cc.Label = cc.Node.extend({
     _originalFontSize: 0,
 
     _blendFunc: null,
+    _isUseSystemFont: true,
     _labelSkinDirty: true,
     _labelType: 0, //0 is ttf, 1 is bmfont.
     _fontHandle: "", //a ttf font name or a bmfont file path.
     //add variables for bmfont
-    _opacityModifyRGB: false,
     _config: null,
     _fontAtlas: null,
     _bmfontScale: 1.0,
@@ -177,6 +177,20 @@ cc.Label = cc.Node.extend({
             this.setString(this._string);
         }
     },
+
+    isSystemFontUsed: function(){
+        return this._isUseSystemFont;
+    },
+
+    setSystemFontUsed: function(value){
+        if(this._isUseSystemFont === value) return;
+
+        if(value){
+            this.setFontFileOrFamily("Arial");
+        }
+        this._isUseSystemFont = value;
+    },
+
     setBMFontFile: function(filename){
         if(filename){
             this._fontHandle = filename;
@@ -352,7 +366,9 @@ cc.Label = cc.Node.extend({
     isWrapTextEnabled: function() {
         return this._isWrapText;
     },
-
+    getFontName: function(){
+        return this._fontHandle;
+    },
     setFontSize: function(fntSize) {
         this._fontSize = fntSize;
         this._originalFontSize = fntSize;
@@ -407,26 +423,27 @@ cc.Label = cc.Node.extend({
         fontHandle = fontHandle || "Arial";
         var extName = cc.path.extname(fontHandle);
 
+        this._resetBMFont();
         //specify font family name directly
         if( extName === null) {
             this._fontHandle = fontHandle;
             this._labelType = 0;
             this._notifyLabelSkinDirty();
+            this._isUseSystemFont = true;
             return;
         }
         //add resource path
         fontHandle = cc.path.join(cc.loader.resPath, fontHandle);
 
+        this._isUseSystemFont = false;
         if(extName === ".ttf") {
             this._labelType = 0;
-            this._resetBMFont();
             this.setLineHeight(0);
             this._fontHandle = this._loadTTFFont(fontHandle);
         }
         else if(extName === ".fnt"){
             //todo add bmfont here
             this._labelType = 1;
-            this._resetBMFont();
             this._initBMFontWithString(this._string, fontHandle);
         }
     },

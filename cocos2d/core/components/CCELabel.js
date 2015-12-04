@@ -157,6 +157,28 @@ var Label = cc.Class({
             }
         },
 
+        _useSystemFont: true,
+
+        useSystemFont: {
+            get: function(){
+                var sgNode = this._sgNode;
+                if(sgNode){
+                    return sgNode.isSystemFontUsed();
+                }
+                return this._useSystemFont;
+            },
+            set: function(value){
+                var sgNode = this._sgNode;
+                this._useSystemFont = value;
+                if(value){
+                    if(sgNode){
+                        sgNode.setSystemFontUsed(value);
+                    }
+                }
+
+            }
+        }
+
         // TODO
         // enableRichText: {
         //     default: false,
