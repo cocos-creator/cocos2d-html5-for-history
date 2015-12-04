@@ -441,7 +441,7 @@ cc.Label = cc.Node.extend({
 });
 
 cc.BMFontHelper = {
-    alignText: function() {
+    _alignText: function() {
         var ret = true;
 
         do {
@@ -451,9 +451,9 @@ cc.BMFontHelper = {
             this._textDesiredHeight = 0;
             this._linesWidth = [];
             if (this._maxLineWidth > 0 && !this._lineBreakWithoutSpaces) {
-                this.multilineTextWrapByWord();
+                this._multilineTextWrapByWord();
             } else {
-                this.multilineTextWrapByChar();
+                this._multilineTextWrapByChar();
             }
 
             this._computeAlignmentOffset();
@@ -462,15 +462,15 @@ cc.BMFontHelper = {
             if (this._overFlow === 1) {
                 var fontSize = this.getFontSize();
 
-                if (fontSize > 0 && this.isVerticalClamp()) {
-                    this._shrinkLabelToContentSize(this.isVerticalClamp.bind(this));
+                if (fontSize > 0 && this._isVerticalClamp()) {
+                    this._shrinkLabelToContentSize(this._isVerticalClamp.bind(this));
                 }
             }
 
             if (!this._updateQuad()) {
                 ret = false;
                 if (!this._isWrapText && this._overFlow === 1) {
-                    this._shrinkLabelToContentSize(this.isHorizontalClamp.bind(this));
+                    this._shrinkLabelToContentSize(this._isHorizontalClamp.bind(this));
                 }
                 break;
             }
@@ -756,15 +756,15 @@ cc.BMFontHelper = {
         return true;
     },
 
-    multilineTextWrapByWord: function() {
+    _multilineTextWrapByWord: function() {
         return this._multilineTextWrap(this._getFirstWordLen.bind(this));
     },
 
-    multilineTextWrapByChar: function() {
+    _multilineTextWrapByChar: function() {
         return this._multilineTextWrap(this._getFirstCharLen.bind(this));
     },
 
-    isVerticalClamp: function() {
+    _isVerticalClamp: function() {
         if (this._textDesiredHeight > this._contentSize.height) {
             return true;
         } else {
@@ -772,7 +772,7 @@ cc.BMFontHelper = {
         }
     },
 
-    isHorizontalClamp: function() {
+    _isHorizontalClamp: function() {
         var letterClamp = false;
 
         for (var ctr = 0; ctr < this.getStringLength(); ++ctr) {
@@ -814,9 +814,9 @@ cc.BMFontHelper = {
             this._fontAtlas.scaleFontLetterDefinition(scale);
             this.setLineHeight(originalLineHeight * scale);
             if (this._maxLineWidth > 0 && !this._lineBreakWithoutSpaces) {
-                this.multilineTextWrapByWord();
+                this._multilineTextWrapByWord();
             } else {
-                this.multilineTextWrapByChar();
+                this._multilineTextWrapByChar();
             }
             this._computeAlignmentOffset();
         }
@@ -851,7 +851,7 @@ cc.BMFontHelper = {
 
         if (this._fontAtlas) {
             this._computeHorizontalKerningForText(this._string);
-            updateFinished = this.alignText();
+            updateFinished = this._alignText();
         }
         if (updateFinished) {
             this._labelSkinDirty = false;
@@ -959,7 +959,7 @@ cc.BMFontHelper = {
         this._cascadeColorEnabled = true;
         this._cascadeOpacityEnabled = true;
         this._string = str;
-        this.setBMFontFile(fntFile);
+        this._setBMFontFile(fntFile);
     },
 
     _createSpriteBatchNode: function(texture) {
@@ -972,7 +972,7 @@ cc.BMFontHelper = {
         this.setColor(this.color);
     },
     //this method is used as createFontAtlas
-    createFontChars: function() {
+    _createFontChars: function() {
         if (!this._config) {
             return;
         }
@@ -1033,7 +1033,7 @@ cc.BMFontHelper = {
         }
     },
 
-    setBMFontFile: function(filename) {
+    _setBMFontFile: function(filename) {
         if (filename) {
             this._fontHandle = filename;
             var self = this;
@@ -1050,7 +1050,7 @@ cc.BMFontHelper = {
                     }
 
                     self._config = results[0];
-                    self.createFontChars();
+                    self._createFontChars();
                     texture = cc.textureCache.addImage(self._config.atlasName);
                     var locIsLoaded = texture.isLoaded();
                     self._textureLoaded = locIsLoaded;
