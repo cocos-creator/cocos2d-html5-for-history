@@ -109,48 +109,25 @@ cc.Label = cc.Node.extend({
     _vAlign: cc.VerticalTextAlignment.TOP, //0 bottom,1 center, 2 top
     _string: "",
     _fontSize: 20,
-    _initFontSizeFromFile: true,
     _overFlow: 0, //0 clamp, 1 shrink 2, resize to content
     _isWrapText: true,
-    _numberOfLines: 0,
     _spacingX: 0,
-    _lettersInfo: [],
-    //add variables for layout
-    _linesWidth: [],
-    _linesOffsetX: [],
-    _textDesiredHeight: 0,
-    _letterOffsetY: 0,
-    _tailoredTopY: 0,
-    _tailoredBottomY: 0,
-    _originalFontSize: 0,
 
     _blendFunc: null,
     _isUseSystemFont: true,
     _labelSkinDirty: true,
     _labelType: 0, //0 is ttf, 1 is bmfont.
     _fontHandle: "", //a ttf font name or a bmfont file path.
-    //add variables for bmfont
-    _config: null,
-    _fontAtlas: null,
-    _bmfontScale: 1.0,
+    _lineSpacing: 0,
+
+    _maxLineWidth:  0,
+    _labelDimensions:  cc.size(0, 0),
+    _labelWidth:  0,
+    _labelHeight:  0,
 
     // max width until a line break is added
     _lineHeight: 0,
-    _lineSpacing: 0,
-    _additionalKerning: 0,
-    _horizontalKernings: [],
-    _maxLineWidth: 0,
-    _labelDimensions: cc.size(0, 0),
-    _labelWidth: 0,
-    _labelHeight: 0,
-    _lineBreakWithoutSpaces: false,
-    _imageOffset: null,
-
-    _reusedRect: cc.rect(0, 0, 0, 0),
-
-    _textureLoaded: false,
     _className: "Label",
-    _spriteBatchNode: null,
 
     //fontHandle it is a font name or bmfont file.
     ctor: function(string, fontHandle, type) {
@@ -175,6 +152,37 @@ cc.Label = cc.Node.extend({
         }
     },
 
+    _resetBMFont: function() {
+        this._imageOffset = cc.p(0, 0);
+        this._cascadeColorEnabled = true;
+        this._cascadeOpacityEnabled = true;
+        this._fontAtlas = null;
+        this._config = null;
+        this._initFontSizeFromFile = true;
+        this._numberOfLines =  0;
+        this._lettersInfo =  [];
+        this._linesWidth =  [];
+        this._linesOffsetX =  [];
+        this._originalFontSize =  0;
+        this._textDesiredHeight =  0;
+        this._letterOffsetY =  0;
+        this._tailoredTopY =  0;
+        this._tailoredBottomY =  0;
+        this._config =  null;
+        this._fontAtlas =  null;
+        this._bmfontScale =  1.0;
+        this._additionalKerning =  0;
+        this._horizontalKernings =  [];
+        this._lineBreakWithoutSpaces =  false;
+
+        this._reusedRect =  cc.rect(0, 0, 0, 0);
+        this._textureLoaded = false;
+
+        if (this._spriteBatchNode) {
+            this.removeChild(this._spriteBatchNode);
+            this._spriteBatchNode = null;
+        }
+    },
     isSystemFontUsed: function() {
         return this._isUseSystemFont;
     },
@@ -240,8 +248,10 @@ cc.Label = cc.Node.extend({
     },
     setFontSize: function(fntSize) {
         this._fontSize = fntSize;
-        this._originalFontSize = fntSize;
-        this._initFontSizeFromFile = false;
+        if(this._labelType === 1){
+            this._originalFontSize = fntSize;
+            this._initFontSizeFromFile = false;
+        }
         this._notifyLabelSkinDirty();
     },
 
@@ -370,6 +380,15 @@ cc.Label = cc.Node.extend({
             if (oldWidth === this._contentSize.width && oldHeight === this._contentSize.height) {
                 return;
             }
+            var newWidth = size.width || size;
+            var newHeight = size.height || height;
+            this._labelWidth = newWidth;
+            this._labelHeight = newHeight;
+            this._labelDimensions.width = newWidth;
+            this._labelDimensions.height = newHeight;
+
+            this._maxLineWidth = newWidth;
+
             this._notifyLabelSkinDirty();
         } else if (this._labelType === 1) {
             if (!height) {
@@ -671,11 +690,6 @@ cc.BMFontHelper = {
                 }
 
                 var letterX = (nextLetterX + letterDef._offsetX * this._bmfontScale) / contentScaleFactor;
-                if (letterX <= this._labelWidth) {
-                    this._lineBreakWithoutSpaces = true;
-                } else {
-                    this._lineBreakWithoutSpaces = false;
-                }
                 if (this._isWrapText && this._maxLineWidth > 0 && nextTokenX > 0 && letterX + letterDef._width * this._bmfontScale > this._maxLineWidth) {
                     this._linesWidth.push(letterRight);
                     letterRight = 0;
@@ -858,14 +872,6 @@ cc.BMFontHelper = {
         }
     },
 
-    _resetBMFont: function() {
-        this._fontAtlas = null;
-        this._config = null;
-        if (this._spriteBatchNode) {
-            this.removeChild(this._spriteBatchNode);
-            this._spriteBatchNode = null;
-        }
-    },
 
     _computeAlignmentOffset: function() {
         this._linesOffsetX = [];
@@ -940,9 +946,8 @@ cc.BMFontHelper = {
     },
 
     _updateBMFontScale: function() {
-        var originalFontSize = this._fontAtlas._fontSize;
         if (this._labelType === 1) {
-            this._bmfontScale = this._fontSize * cc.contentScaleFactor() / originalFontSize;
+            this._bmfontScale = this._fontSize * cc.contentScaleFactor() / this._originalFontSize;
         } else {
             this._bmfontScale = 1;
         }
@@ -955,14 +960,12 @@ cc.BMFontHelper = {
             cc.log("cc.Label._initBMFontWithString(): re-init is no longer supported");
             return false;
         }
-        this._imageOffset = cc.p(0, 0);
-        this._cascadeColorEnabled = true;
-        this._cascadeOpacityEnabled = true;
         this._string = str;
         this._setBMFontFile(fntFile);
     },
 
     _createSpriteBatchNode: function(texture) {
+
         this._spriteBatchNode = new cc.SpriteBatchNode(texture, this._string.length);
         this._spriteBatchNode.setCascadeColorEnabled(true);
         this._spriteBatchNode.setCascadeOpacityEnabled(true);
@@ -1038,10 +1041,8 @@ cc.BMFontHelper = {
             this._fontHandle = filename;
             var self = this;
             if (this._labelType === 1) {
-                //try to release the previous resource
-                if (this._config && this._spriteBatchNode && this._fontAtlas) {
-                    this._resetBMFont();
-                }
+
+                this._resetBMFont();
 
                 var texture;
                 cc.loader.load(this._fontHandle, function(err, results) {

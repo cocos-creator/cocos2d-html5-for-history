@@ -94,7 +94,7 @@ var Label = cc.Class({
             get: function(){
                 var sgNode = this._sgNode;
                 if(sgNode){
-                    return sgNode.getFontSize();
+                    this._fontSize = sgNode.getFontSize();
                 }
                 return this._fontSize;
             },
@@ -132,7 +132,7 @@ var Label = cc.Class({
             get: function(){
                 var sgNode = this._sgNode;
                 if(sgNode){
-                    return sgNode.isWrapTextEnabled();
+                    this._enableWrapText = sgNode.isWrapTextEnabled();
                 }
                 return this._enableWrapText;
             },
@@ -171,7 +171,7 @@ var Label = cc.Class({
             get: function(){
                 var sgNode = this._sgNode;
                 if(sgNode){
-                    return sgNode.isSystemFontUsed();
+                    this._isSystemFontUsed = sgNode.isSystemFontUsed();
                 }
                 return this._isSystemFontUsed;
             },
@@ -208,7 +208,7 @@ var Label = cc.Class({
 
         sgNode.setHorizontalAlign( this.horizontalAlign );
         sgNode.setVerticalAlign( this.verticalAlign );
-        sgNode.setFontSize( this._fontSize );
+        sgNode.setFontSize( this.fontSize );
         sgNode.setOverflow( this.overflow );
         sgNode.enableWrapText( this.enableWrapText );
         sgNode.setContentSize( this.node.getContentSize() );
