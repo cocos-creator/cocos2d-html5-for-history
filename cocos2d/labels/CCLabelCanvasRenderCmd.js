@@ -36,7 +36,7 @@
     var proto = cc.Label.TTFLabelBaker.prototype = Object.create(Object.prototype);
     proto._getLineHeight = function() {
         //todo refine it
-        var nodeSpacingY = this._node._spacingY;
+        var nodeSpacingY = this._node.getLineHeight();
         if(nodeSpacingY === 0) nodeSpacingY = this._drawFontsize;
         else { nodeSpacingY = nodeSpacingY * this._drawFontsize / this._node._fontSize;}
         return nodeSpacingY | 0;

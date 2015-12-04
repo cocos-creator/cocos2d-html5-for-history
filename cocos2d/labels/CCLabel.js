@@ -166,13 +166,15 @@ cc.Label = cc.Node.extend({
 
         cc.Node.prototype.ctor.call(this);
         this.setAnchorPoint(cc.p(0.5, 0.5));
-        this.setFontFileOrFamily(fontHandle);
         this.setContentSize(cc.size(128, 128));
         this._blendFunc = cc.BlendFunc._alphaNonPremultiplied();
 
         //init bmfont
         if (type === 1) {
             this._initBMFontWithString(this._string, this._fontHandle);
+        }else{
+            this.setFontFileOrFamily(fontHandle);
+            this.setString(this._string);
         }
     },
     setFile: function(filename){
@@ -210,6 +212,9 @@ cc.Label = cc.Node.extend({
                         self._createSpriteBatchNode(texture);
                     }
                 });
+            }
+            else{
+                this.setFontFileOrFamily(filename);
             }
         }
     },
@@ -414,7 +419,7 @@ cc.Label = cc.Node.extend({
     },
 
     setFontFileOrFamily: function( fontHandle ) {
-        fontHandle = fontHandle || "";
+        fontHandle = fontHandle || "Arial";
         var extName = cc.path.extname(fontHandle);
 
         //specify font family name directly
@@ -522,13 +527,17 @@ cc.Label = cc.Node.extend({
 
     _notifyLabelSkinDirty: function() {
         this._labelSkinDirty = true;
-        if(CC_EDITOR){
-            this._updateContent();
-            this.setColor(this.color);
-            this._labelSkinDirty = false;
-        }
+
         if(this._renderCmd)
             this._renderCmd.setDirtyFlag(cc.Node._dirtyFlags.textDirty);
+
+        if(this._labelType === 1){
+            if(CC_EDITOR){
+                this._updateContent();
+                this.setColor(this.color);
+                this._labelSkinDirty = false;
+            }
+        }
     },
     _createRenderCmd: function() {
         if (this._labelType === 0) {

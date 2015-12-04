@@ -113,7 +113,7 @@ var Label = cc.Class({
          * @property {LabelType} labelType
          */
         labelType: {
-            default: LabelType.BMFont,
+            default: LabelType.TTF,
             type: LabelType,
             notify: function(){
                 var sgNode = this._sgNode;
@@ -162,8 +162,8 @@ var Label = cc.Class({
 
         // TODO
         file: {
-            default: null,
-            url: cc.BitmapFont,
+            default: "Arial",
+            url: cc.TTFFont,
             notify: function () {
                 var sgNode = this._sgNode;
                 if (sgNode) {
@@ -186,7 +186,7 @@ var Label = cc.Class({
     },
 
     _createSgNode: function () {
-        var sgNode = new cc.Label(this.string, this.file, cc.Label.Type.BMFont);
+        var sgNode = new cc.Label(this.string, this.file, cc.Label.Type.TTF);
 
         // TODO
         // sgNode.enableRichText = this.enableRichText;
