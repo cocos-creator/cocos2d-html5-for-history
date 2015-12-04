@@ -104,9 +104,6 @@ cc.LetterInfo = function(){
 };
 
 cc.Label = cc.Node.extend({
-    __CHINESE_REG: /^[\u4E00-\u9FFF\u3400-\u4DFF]+$/,
-    __JAPANESE_REG: /[\u3000-\u303F]|[\u3040-\u309F]|[\u30A0-\u30FF]|[\uFF00-\uFFEF]|[\u4E00-\u9FAF]|[\u2605-\u2606]|[\u2190-\u2195]|\u203B/g,
-    __KOREAN_REG: /^[\u1100-\u11FF]|[\u3130-\u318F]|[\uA960-\uA97F]|[\uAC00-\uD7AF]|[\uD7B0-\uD7FF]+$/,
     _hAlign: cc.TextAlignment.LEFT, //0 left, 1 center, 2 right
     _vAlign: cc.VerticalTextAlignment.TOP, //0 bottom,1 center, 2 top
     _string: "",
@@ -529,10 +526,11 @@ cc.Label = cc.Node.extend({
     },
 
     _notifyLabelSkinDirty: function() {
-        this._labelSkinDirty = true;
-
-        if(this._renderCmd)
-            this._renderCmd.setDirtyFlag(cc.Node._dirtyFlags.textDirty);
+        if(!CC_EDITOR){
+            this._labelSkinDirty = true;
+            if(this._renderCmd)
+                this._renderCmd.setDirtyFlag(cc.Node._dirtyFlags.textDirty);
+        }
 
         if(this._labelType === 1){
             if(CC_EDITOR){
@@ -590,7 +588,10 @@ cc.Label = cc.Node.extend({
     },
 
     _isCJK_unicode: function(ch){
-        return this.__CHINESE_REG.test(ch) || this.__JAPANESE_REG.test(ch) || this.__KOREAN_REG.test(ch);
+        var __CHINESE_REG = /^[\u4E00-\u9FFF\u3400-\u4DFF]+$/;
+        var __JAPANESE_REG = /[\u3000-\u303F]|[\u3040-\u309F]|[\u30A0-\u30FF]|[\uFF00-\uFFEF]|[\u4E00-\u9FAF]|[\u2605-\u2606]|[\u2190-\u2195]|\u203B/g;
+        var __KOREAN_REG = /^[\u1100-\u11FF]|[\u3130-\u318F]|[\uA960-\uA97F]|[\uAC00-\uD7AF]|[\uD7B0-\uD7FF]+$/;
+        return __CHINESE_REG.test(ch) || __JAPANESE_REG.test(ch) || __KOREAN_REG.test(ch);
     },
     //Checking whether the character is a whitespace
     _isspace_unicode: function(ch){
