@@ -32,8 +32,11 @@ function getParentSize (parent) {
             return cc.visibleRect;
         }
     }
-    else {
+    else if (!parent._sizeProvider || (parent._sizeProvider instanceof cc.Node)) {
         return parent._contentSize;
+    }
+    else {
+        return parent.getContentSize();
     }
 }
 

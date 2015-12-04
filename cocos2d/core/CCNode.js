@@ -155,7 +155,32 @@ var Node = cc.Class({
 
     _onPreDestroy: function () {
         var i, len;
+
+        // marked as destroying
         this._objFlags |= Destroying;
+
+        // detach self and children from editor
+        var parent = this._parent;
+        var destroyByParent = parent && (parent._objFlags & Destroying);
+        if ( !destroyByParent ) {
+            if (CC_EDITOR || CC_TEST) {
+                this._registerIfAttached(false);
+            }
+        }
+
+        // destroy children
+        var children = this._children;
+        for (i = 0, len = children.length; i < len; ++i) {
+            // destroy immediate so its _onPreDestroy can be called
+            children[i]._destroyImmediate();
+        }
+
+        // destroy self components
+        for (i = 0, len = this._components.length; i < len; ++i) {
+            var component = this._components[i];
+            // destroy immediate so its _onPreDestroy can be called
+            component._destroyImmediate();
+        }
 
         // Remove all listeners
         for (i = 0, len = this.__eventTargets.length; i < len; ++i) {
@@ -163,38 +188,26 @@ var Node = cc.Class({
             target && target.targetOff && target.targetOff(this);
         }
         this.__eventTargets.length = 0;
-        // destroy components
-        for (i = 0, len = this._components.length; i < len; ++i) {
-            var component = this._components[i];
-            // destroy immediate so its _onPreDestroy can be called before
-            component._destroyImmediate();
-        }
+
         // remove from persist
         if (this._persistNode) {
             cc.game.removePersistRootNode(this);
         }
-        // destroy children
-        var children = this._children;
-        for (i = 0, len = children.length; i < len; ++i) {
-            // destroy immediate so its _onPreDestroy can be called before
-            children[i]._destroyImmediate();
-        }
-        // remove self
-        var parent = this._parent;
-        var destroyByParent = parent && (parent._objFlags & Destroying);
-        if (!destroyByParent) {
+
+        if ( !destroyByParent ) {
+            // remove from parent
             if (parent) {
                 parent._children.splice(parent._children.indexOf(this), 1);
             }
+
             this._removeSgNode();
+
             // simulate some destruct logic to make undo system work correctly
             if (CC_EDITOR) {
                 // ensure this node can reattach to scene by undo system
                 this._parent = null;
             }
         }
-        // detach
-        this._registerIfAttached(false);
     },
 
     // COMPONENT
@@ -382,17 +395,20 @@ var Node = cc.Class({
 
     // INTERNAL
 
-    _registerIfAttached: function (register) {
-        if (CC_EDITOR || CC_TEST) {
-            if (register) {
-                cc.engine.attachedObjsForEditor[this.uuid] = this;
-                cc.engine.emit('node-attach-to-scene', {target: this});
-                //this._objFlags |= RegisteredInEditor;
-            }
-            else {
-                cc.engine.emit('node-detach-from-scene', {target: this});
-                delete cc.engine.attachedObjsForEditor[this._id];
-            }
+    _registerIfAttached: (CC_EDITOR || CC_TEST) && function (register) {
+        if (register) {
+            cc.engine.attachedObjsForEditor[this.uuid] = this;
+            cc.engine.emit('node-attach-to-scene', {target: this});
+            //this._objFlags |= RegisteredInEditor;
+        }
+        else {
+            cc.engine.emit('node-detach-from-scene', {target: this});
+            delete cc.engine.attachedObjsForEditor[this._id];
+        }
+        var children = this._children;
+        for (var i = 0, len = children.length; i < len; ++i) {
+            var child = children[i];
+            child._registerIfAttached(register);
         }
     },
 
@@ -482,16 +498,12 @@ var Node = cc.Class({
 
     _onColorChanged: function () {
         // update components if also in scene graph
-        if ( !this._cascadeColorEnabled || !this._cascadeOpacityEnabled ) {
-            for (var c = 0; c < this._components.length; ++c) {
-                var comp = this._components[c];
-                if (comp instanceof cc._ComponentInSG && comp.isValid) {
-                    if (!this._cascadeColorEnabled) {
-                        comp._sgNode.setColor(this._color);
-                    }
-                    if (!this._cascadeOpacityEnabled) {
-                        comp._sgNode.setOpacity(this._opacity);
-                    }
+        for (var c = 0; c < this._components.length; ++c) {
+            var comp = this._components[c];
+            if (comp instanceof cc._ComponentInSG && comp.isValid) {
+                comp._sgNode.setColor(this._color);
+                if ( !this._cascadeOpacityEnabled ) {
+                    comp._sgNode.setOpacity(this._opacity);
                 }
             }
         }
@@ -499,23 +511,11 @@ var Node = cc.Class({
 
     _onCascadeChanged: function () {
         // update components which also in scene graph
-        var color = this._cascadeColorEnabled ? cc.Color.WHITE : this._color;
         var opacity = this._cascadeOpacityEnabled ? 255 : this._opacity;
         for (var c = 0; c < this._components.length; ++c) {
             var comp = this._components[c];
             if (comp instanceof cc._ComponentInSG && comp.isValid) {
-                comp._sgNode.setColor(color);
                 comp._sgNode.setOpacity(opacity);
-            }
-        }
-    },
-
-    _onSizeChanged: function () {
-        // update components if also in scene graph
-        for (var c = 0; c < this._components.length; ++c) {
-            var comp = this._components[c];
-            if (comp instanceof cc._ComponentInSG && comp.isValid) {
-                comp._sgNode.setContentSize(this._contentSize);
             }
         }
     },

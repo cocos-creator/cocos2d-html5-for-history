@@ -60,9 +60,7 @@ var ComponentInSG = cc.Class({
     _appendSgNode: function (sgNode) {
         var node = this.node;
 
-        if ( !node._cascadeColorEnabled ) {
-            sgNode.setColor(node._color);
-        }
+        sgNode.setColor(node._color);
         if ( !node._cascadeOpacityEnabled ) {
             sgNode.setOpacity(node._opacity);
         }

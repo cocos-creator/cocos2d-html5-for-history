@@ -209,9 +209,9 @@ function instantiateObj (obj, parent, ownerObj, ownerKey) {
         objsToClearTmpVar.push(obj);
         return clone;
     }
-    //else if (_isDomNode && _isDomNode(obj)) {
-    //    return obj;
-    //}
+    else if (obj instanceof cc.ValueType) {
+        return obj.clone();
+    }
     else {
         var ctor = obj.constructor;
         if (cc.Class._isCCClass(ctor)) {

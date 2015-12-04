@@ -379,7 +379,9 @@ if (CC_DEV) {
         'updateDisplayedOpacity',
         'updateDisplayedColor',
         'userData',
-        'userObject'
+        'userObject',
+        '_cascadeColorEnabled',
+        'cascadeColor'
     ]);
     provideClearError(cc.ENode.prototype, {
         arrivalOrder: 'getSiblingIndex, setSiblingIndex',

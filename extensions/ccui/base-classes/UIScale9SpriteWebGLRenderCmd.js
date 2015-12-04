@@ -101,12 +101,6 @@
 
     };
 
-    proto._syncStatus = function (parentCmd){
-        cc.Node.WebGLRenderCmd.prototype._syncStatus.call(this, parentCmd);
-        this._updateDisplayColor(this._displayedColor);
-        this._updateDisplayOpacity(this._displayedOpacity);
-    };
-
     proto._updateDisplayOpacity = function(parentOpacity){
         cc.Node.WebGLRenderCmd.prototype._updateDisplayOpacity.call(this, parentOpacity);
         var node = this._node;

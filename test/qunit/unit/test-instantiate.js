@@ -112,6 +112,17 @@
         cc.js.unregisterClass(Sprite);
     });
 
+    test('ValueType', function () {
+        var obj = {
+            pos: new cc.Vec2(1, 2)
+        };
+        var clone = cc.instantiate(obj);
+
+        ok(obj.pos !== clone.pos, 'value type should be cloned');
+        strictEqual(obj.pos.x, clone.pos.x, 'checking x');
+        strictEqual(obj.pos.y, clone.pos.y, 'checking y');
+    });
+
     test('Circular Reference', function () {
         function MyAsset () {
             // array1 = [1, array2]

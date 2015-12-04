@@ -98,7 +98,7 @@ var Canvas = cc.Class({
     },
 
     ctor: function () {
-        this._updateSize = this.updateSize.bind(this);
+        this._thisOnResized = this.onResized.bind(this);
     },
 
     onLoad: function () {
@@ -113,18 +113,18 @@ var Canvas = cc.Class({
         this.node.setAnchorPoint(0, 0);
 
         if (CC_EDITOR) {
-            cc.engine.on('design-resolution-changed', this._updateSize);
+            cc.engine.on('design-resolution-changed', this._thisOnResized);
         }
         else {
             if (cc.sys.isMobile) {
-                window.addEventListener('resize', this._updateSize);
+                window.addEventListener('resize', this._thisOnResized);
             }
             else {
-                cc.eventManager.addCustomListener('canvas-resize', this._updateSize);
+                cc.eventManager.addCustomListener('canvas-resize', this._thisOnResized);
             }
         }
 
-        this.updateSize();
+        this.onResized();
         this.applyPolicy();
     },
 
@@ -134,24 +134,22 @@ var Canvas = cc.Class({
         }
 
         if (CC_EDITOR) {
-            cc.engine.off('design-resolution-changed', this._updateSize);
+            cc.engine.off('design-resolution-changed', this._thisOnResized);
         }
         else {
             if (cc.sys.isMobile) {
-                window.removeEventListener('resize', this._updateSize);
+                window.removeEventListener('resize', this._thisOnResized);
             }
             else {
-                cc.eventManager.removeCustomListeners('canvas-resize', this._updateSize);
+                cc.eventManager.removeCustomListeners('canvas-resize', this._thisOnResized);
             }
         }
     },
 
     //
 
-    updateSize: function () {
-        // always fit render size
-        var renderRes = CC_EDITOR ? cc.engine.getDesignResolutionSize() : cc.visibleRect;
-        this.node.setContentSize(renderRes);
+    onResized: function () {
+        // TODO - size dirty
     },
 
     applyPolicy: function () {
