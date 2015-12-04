@@ -343,7 +343,7 @@ cc.Label = cc.Node.extend({
         this._notifyLabelSkinDirty();
     },
     _rescaleWithOriginalFontSize: function(){
-        var renderingFontSize = this._getRenderingFontSize();
+        var renderingFontSize = this.getFontSize();
         if (this._originalFontSize - renderingFontSize >= 1) {
             this._scaleFontSizeDown(this._originalFontSize);
         }
@@ -785,7 +785,7 @@ cc.Label = cc.Node.extend({
     },
 
     _shrinkLabelToContentSize: function(lambda){
-        var fontSize = this._getRenderingFontSize();
+        var fontSize = this.getFontSize();
 
         var i = 0;
         var tempLetterDefinition = this._fontAtlas.cloneLetterDefinition();
@@ -823,9 +823,6 @@ cc.Label = cc.Node.extend({
         }
     },
 
-    _getRenderingFontSize: function(){
-        return this._fontSize;
-    },
     _scaleFontSizeDown: function(fontSize){
         var shouldUpdateContent = true;
         //1 is BMFont
@@ -870,7 +867,7 @@ cc.Label = cc.Node.extend({
 
             //shrink
             if(this._overFlow === 1){
-                var fontSize = this._getRenderingFontSize();
+                var fontSize = this.getFontSize();
 
                 if(fontSize > 0 && this.isVerticalClamp()){
                     this._shrinkLabelToContentSize(this.isVerticalClamp.bind(this));
