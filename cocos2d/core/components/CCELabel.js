@@ -137,16 +137,25 @@ var Label = cc.Class({
             }
         },
 
+        _enableWrapText: true,
         /**
          * Whether auto wrap label when string width is large than label width
          * @property {Boolean} enableWrapText
          */
         enableWrapText: {
-            default: false,
-            notify: function () {
+            get: function(){
                 var sgNode = this._sgNode;
-                if (sgNode) {
-                    sgNode.enableWrapText( this.enableWrapText );
+                if(sgNode){
+                    return sgNode.isWrapTextEnabled();
+                }
+                return this._enableWrapText;
+            },
+            set: function(value){
+                this._enableWrapText = value;
+
+                var sgNode = this._sgNode;
+                if(sgNode){
+                    sgNode.enableWrapText(value);
                 }
             }
         },
