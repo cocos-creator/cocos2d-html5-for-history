@@ -74,11 +74,12 @@ cc.FontAtlas.prototype = {
     },
     scaleFontLetterDefinition: function(scaleFactor) {
         for (var fontDefinition in this._letterDefinitions) {
-            this._letterDefinitions[fontDefinition]._width *= scaleFactor;
-            this._letterDefinitions[fontDefinition]._height *= scaleFactor;
-            this._letterDefinitions[fontDefinition]._offsetX *= scaleFactor;
-            this._letterDefinitions[fontDefinition]._offsetY *= scaleFactor;
-            this._letterDefinitions[fontDefinition]._xAdvance *= scaleFactor;
+            var letterDefinitions = this._letterDefinitions[fontDefinition];
+            letterDefinitions._width *= scaleFactor;
+            letterDefinitions._height *= scaleFactor;
+            letterDefinitions._offsetX *= scaleFactor;
+            letterDefinitions._offsetY *= scaleFactor;
+            letterDefinitions._xAdvance *= scaleFactor;
         }
     },
 

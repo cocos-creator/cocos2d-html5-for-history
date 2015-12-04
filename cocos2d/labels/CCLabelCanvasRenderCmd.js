@@ -249,9 +249,14 @@
     };
 
     proto._rebuildLabelSkin = function() {
-        if (this._node._labelSkinDirty) {
-            this._bakeLabel();
-            this._prepareQuad();
+        var node = this._node;
+        if (node._labelSkinDirty) {
+            if(node._labelType === cc.Label.Type.TTF){
+                this._bakeLabel();
+                this._prepareQuad();
+            }else {
+                node._updateContent();
+            }
             this._node._labelSkinDirty = false;
         }
     };
@@ -280,62 +285,62 @@
 
     proto.rendering = function(ctx, scaleX, scaleY) {
         this._rebuildLabelSkin();
+
         var node = this._node;
 
-        if (node._labelType === cc.Label.Type.BMFont) {
-            return;
-        }
+        if (node._labelType === cc.Label.Type.TTF) {
+            var locDisplayOpacity = this._displayedOpacity;
+            var alpha = locDisplayOpacity / 255;
+            //var locTexture = this._labelTexture;
+            if (locDisplayOpacity === 0)
+                return;
 
-        var locDisplayOpacity = this._displayedOpacity;
-        var alpha = locDisplayOpacity / 255;
-        //var locTexture = this._labelTexture;
-        if (locDisplayOpacity === 0)
-            return;
+            var wrapper = ctx || cc._renderContext,
+                context = wrapper.getContext();
+            wrapper.setTransform(this._worldTransform, scaleX, scaleY);
+            wrapper.setCompositeOperation(cc.Node.CanvasRenderCmd._getCompositeOperationByBlendFunc(node._blendFunc));
+            wrapper.setGlobalAlpha(alpha);
 
-        var wrapper = ctx || cc._renderContext,
-            context = wrapper.getContext();
-        wrapper.setTransform(this._worldTransform, scaleX, scaleY);
-        wrapper.setCompositeOperation(cc.Node.CanvasRenderCmd._getCompositeOperationByBlendFunc(node._blendFunc));
-        wrapper.setGlobalAlpha(alpha);
+            if (this._labelTexture) {
 
-        if (this._labelTexture) {
+                var quad = this._quad; {
+                    var sx, sy, sw, sh;
+                    var x, y, w, h;
 
-            var quad = this._quad; {
-                var sx, sy, sw, sh;
-                var x, y, w, h;
+                    x = quad._bl.vertices.x;
+                    y = quad._bl.vertices.y;
+                    w = quad._tr.vertices.x - quad._bl.vertices.x;
+                    h = quad._tr.vertices.y - quad._bl.vertices.y;
+                    y = -y - h;
 
-                x = quad._bl.vertices.x;
-                y = quad._bl.vertices.y;
-                w = quad._tr.vertices.x - quad._bl.vertices.x;
-                h = quad._tr.vertices.y - quad._bl.vertices.y;
-                y = -y - h;
+                    var textureWidth = this._labelTexture.getPixelWidth();
+                    var textureHeight = this._labelTexture.getPixelHeight();
 
-                var textureWidth = this._labelTexture.getPixelWidth();
-                var textureHeight = this._labelTexture.getPixelHeight();
+                    sx = quad._bl.texCoords.u * textureWidth;
+                    sy = quad._bl.texCoords.v * textureHeight;
+                    sw = (quad._tr.texCoords.u - quad._bl.texCoords.u) * textureWidth;
+                    sh = (quad._tr.texCoords.v - quad._bl.texCoords.v) * textureHeight;
 
-                sx = quad._bl.texCoords.u * textureWidth;
-                sy = quad._bl.texCoords.v * textureHeight;
-                sw = (quad._tr.texCoords.u - quad._bl.texCoords.u) * textureWidth;
-                sh = (quad._tr.texCoords.v - quad._bl.texCoords.v) * textureHeight;
+                    x = x * scaleX;
+                    y = y * scaleY;
+                    w = w * scaleX;
+                    h = h * scaleY;
 
-                x = x * scaleX;
-                y = y * scaleY;
-                w = w * scaleX;
-                h = h * scaleY;
-
-                var image = this._labelTexture._htmlElementObj;
-                if (this._labelTexture._pattern !== "") {
-                    wrapper.setFillStyle(context.createPattern(image, this._labelTexture._pattern));
-                    context.fillRect(x, y, w, h);
-                } else {
-                    context.drawImage(image,
-                        sx, sy, sw, sh,
-                        x, y, w, h);
+                    var image = this._labelTexture._htmlElementObj;
+                    if (this._labelTexture._pattern !== "") {
+                        wrapper.setFillStyle(context.createPattern(image, this._labelTexture._pattern));
+                        context.fillRect(x, y, w, h);
+                    } else {
+                        context.drawImage(image,
+                                          sx, sy, sw, sh,
+                                          x, y, w, h);
+                    }
                 }
-            }
 
+            }
+            cc.g_NumberOfDraws = cc.g_NumberOfDraws + 1;
         }
-        cc.g_NumberOfDraws = cc.g_NumberOfDraws + 1;
+
     };
 
 })();

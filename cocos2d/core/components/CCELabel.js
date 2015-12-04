@@ -109,7 +109,7 @@ var Label = cc.Class({
         },
 
         /**
-         * OverFlow of label
+         * Overflow of label
          * @property {Overflow} overFlow
          */
         overflow: {
@@ -146,6 +146,10 @@ var Label = cc.Class({
             }
         },
 
+        /**
+         * The font URL of label.
+         * @property {URL} file
+         */
         file: {
             default: "Arial",
             url: cc.Font,
@@ -157,19 +161,23 @@ var Label = cc.Class({
             }
         },
 
-        _useSystemFont: true,
+        _isSystemFontUsed: true,
 
+        /**
+         * Whether use system font name or not.
+         * @property {Boolean} isSystemFontUsed
+         */
         useSystemFont: {
             get: function(){
                 var sgNode = this._sgNode;
                 if(sgNode){
                     return sgNode.isSystemFontUsed();
                 }
-                return this._useSystemFont;
+                return this._isSystemFontUsed;
             },
             set: function(value){
                 var sgNode = this._sgNode;
-                this._useSystemFont = value;
+                this._isSystemFontUsed = value;
                 if(value){
                     if(sgNode){
                         sgNode.setSystemFontUsed(value);

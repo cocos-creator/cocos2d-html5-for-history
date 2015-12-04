@@ -34,16 +34,19 @@
     cc.Label.WebGLRenderCmd = function(renderableObject){
         cc.Node.WebGLRenderCmd.call(this, renderableObject);
         this._needDraw = true;
+
         this._labelTexture = new cc.Texture2D();
-        this._labelCanvas = document.createElement("canvas");
-        this._labelCanvas.width = 1;
-        this._labelCanvas.height = 1;
-        this._labelContext = this._labelCanvas.getContext("2d");
-        this._labelTexture.initWithElement(this._labelCanvas);
-        this._quad = new cc.V3F_C4B_T2F_Quad();
-        this._quadDirty = true;
         this._quadWebBuffer = cc._renderContext.createBuffer();
         this._shaderProgram = cc.shaderCache.programForKey(cc.SHADER_POSITION_TEXTURECOLOR);
+        this._quad = new cc.V3F_C4B_T2F_Quad();
+
+        this._labelCanvas = document.createElement("canvas");
+        this._labelTexture.initWithElement(this._labelCanvas);
+        this._labelContext = this._labelCanvas.getContext("2d");
+
+        this._labelCanvas.width = 1;
+        this._labelCanvas.height = 1;
+        this._quadDirty = true;
         this._splitedStrings = null;
         this._drawFontsize = 0;
     };
@@ -57,26 +60,30 @@
         var node = this._node;
         this._rebuildLabelSkin();
 
-        if(node._labelType === cc.Label.Type.BMFont){
-            return;
+        if(node._labelType === cc.Label.Type.TTF){
+            var gl = ctx || cc._renderContext ;
+
+            this._shaderProgram.use();
+            this._shaderProgram._setUniformForMVPMatrixWithMat4(this._stackMatrix);
+
+            cc.glBlendFunc(node._blendFunc.src,node._blendFunc.dst);
+            cc.glBindTexture2DN(0,this._labelTexture);
+            cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_POS_COLOR_TEX);
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, this._quadWebBuffer);
+
+            if (this._quadDirty) {
+                gl.bufferData(gl.ARRAY_BUFFER, this._quad.arrayBuffer, gl.DYNAMIC_DRAW);
+                this._quadDirty = false;
+            }
+
+            gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 24, 0);                   //cc.VERTEX_ATTRIB_POSITION
+            gl.vertexAttribPointer(1, 4, gl.UNSIGNED_BYTE, true, 24, 12);           //cc.VERTEX_ATTRIB_COLOR
+            gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 24, 16);                  //cc.VERTEX_ATTRIB_TEX_COORDS
+
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         }
 
-        var gl = ctx || cc._renderContext ;
-        this._shaderProgram.use();
-        this._shaderProgram._setUniformForMVPMatrixWithMat4(this._stackMatrix);
-        cc.glBlendFunc(node._blendFunc.src,node._blendFunc.dst);
-        cc.glBindTexture2DN(0,this._labelTexture);
-        cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_POS_COLOR_TEX);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, this._quadWebBuffer);
-        if (this._quadDirty) {
-            gl.bufferData(gl.ARRAY_BUFFER, this._quad.arrayBuffer, gl.DYNAMIC_DRAW);
-            this._quadDirty = false;
-        }
-        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 24, 0);                   //cc.VERTEX_ATTRIB_POSITION
-        gl.vertexAttribPointer(1, 4, gl.UNSIGNED_BYTE, true, 24, 12);           //cc.VERTEX_ATTRIB_COLOR
-        gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 24, 16);                  //cc.VERTEX_ATTRIB_TEX_COORDS
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     };
 
 })();
