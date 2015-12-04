@@ -57,6 +57,10 @@
         var node = this._node;
         this._rebuildLabelSkin();
 
+        if(node._labelType === cc.Label.Type.BMFont){
+            return;
+        }
+
         var gl = ctx || cc._renderContext ;
         this._shaderProgram.use();
         this._shaderProgram._setUniformForMVPMatrixWithMat4(this._stackMatrix);

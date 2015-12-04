@@ -177,7 +177,7 @@ cc.Label = cc.Node.extend({
             this.setString(this._string);
         }
     },
-    setFile: function(filename){
+    setBMFontFile: function(filename){
         if(filename){
             this._fontHandle = filename;
             var self = this;
@@ -213,28 +213,15 @@ cc.Label = cc.Node.extend({
                     }
                 });
             }
-            else{
-                this.setFontFileOrFamily(filename);
-            }
         }
     },
     _resetBMFont: function(){
-        this._fontAtlas = [];
-        this._config = [];
+        this._fontAtlas = null;
+        this._config = null;
         if(this._spriteBatchNode){
             this.removeChild(this._spriteBatchNode);
             this._spriteBatchNode = null;
         }
-    },
-    //FIXME: toggle not working
-    setLabelType: function(type){
-        if(this._labelType === type) return;
-        this._labelType = type;
-        if(type === 0){
-            this._spriteBatchNode.getTextureAtlas().removeAllQuads();
-        }
-        this._createRenderCmd();
-        this._notifyLabelSkinDirty();
     },
     _initBMFontWithString: function(str, fntFile) {
         var self = this;
@@ -245,8 +232,8 @@ cc.Label = cc.Node.extend({
         this._imageOffset = cc.p(0, 0);
         this._cascadeColorEnabled = true;
         this._cascadeOpacityEnabled = true;
-        this.setFile(fntFile);
-
+        this._string = str;
+        this.setBMFontFile(fntFile);
     },
     _createSpriteBatchNode: function(texture){
         this._spriteBatchNode = new cc.SpriteBatchNode(texture, this._string.length);
@@ -395,8 +382,6 @@ cc.Label = cc.Node.extend({
     setSpacingX: function(spacing) {
         if (this._spacingX === spacing) return;
         this._spacingX = spacing;
-        if(this._labelIsTTF === false)
-            this._notifyLabelSkinDirty();
     },
 
     setLineHeight: function(lineHeight) {
@@ -425,7 +410,7 @@ cc.Label = cc.Node.extend({
         //specify font family name directly
         if( extName === null) {
             this._fontHandle = fontHandle;
-            this._labelIsTTF = true;
+            this._labelType = 0;
             this._notifyLabelSkinDirty();
             return;
         }
@@ -433,14 +418,16 @@ cc.Label = cc.Node.extend({
         fontHandle = cc.path.join(cc.loader.resPath, fontHandle);
 
         if(extName === ".ttf") {
-            this._labelIsTTF = true;
+            this._labelType = 0;
+            this._resetBMFont();
+            this.setLineHeight(0);
             this._fontHandle = this._loadTTFFont(fontHandle);
         }
-        else {
+        else if(extName === ".fnt"){
             //todo add bmfont here
-            this._fontHandle = fontHandle;
-            this._labelIsTTF = false;
-            this._notifyLabelSkinDirty();
+            this._labelType = 1;
+            this._resetBMFont();
+            this._initBMFontWithString(this._string, fontHandle);
         }
     },
 
@@ -540,19 +527,10 @@ cc.Label = cc.Node.extend({
         }
     },
     _createRenderCmd: function() {
-        if (this._labelType === 0) {
-            if (cc._renderType === cc.game.RENDER_TYPE_WEBGL)
-                return new cc.Label.TTFWebGLRenderCmd(this);
-            else
-                return new cc.Label.TTFCanvasRenderCmd(this);
-        } else if (this._labelType === 1) {
-            if (cc._renderType === cc.game.RENDER_TYPE_WEBGL) {
-                return new cc.Label.BMFontWebGLRenderCmd(this);
-            }else{
-                return new cc.Label.BMFontCanvasRenderCmd(this);
-            }
-
-        }
+        if (cc._renderType === cc.game.RENDER_TYPE_WEBGL)
+            return new cc.Label.TTFWebGLRenderCmd(this);
+        else
+            return new cc.Label.TTFCanvasRenderCmd(this);
     },
 
     _computeAlignmentOffset: function() {

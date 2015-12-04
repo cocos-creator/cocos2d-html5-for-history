@@ -109,20 +109,6 @@ var Label = cc.Class({
         },
 
         /**
-         * type of label
-         * @property {LabelType} labelType
-         */
-        labelType: {
-            default: LabelType.TTF,
-            type: LabelType,
-            notify: function(){
-                var sgNode = this._sgNode;
-                if(sgNode){
-                    sgNode.setLabelType(this.labelType);
-                }
-            }
-        },
-        /**
          * OverFlow of label
          * @property {Overflow} overFlow
          */
@@ -160,14 +146,13 @@ var Label = cc.Class({
             }
         },
 
-        // TODO
         file: {
             default: "Arial",
-            url: cc.TTFFont,
+            url: cc.Font,
             notify: function () {
                 var sgNode = this._sgNode;
                 if (sgNode) {
-                    sgNode.setFile(this.file);
+                    sgNode.setFontFileOrFamily(this.file);
                 }
             }
         },
@@ -191,7 +176,6 @@ var Label = cc.Class({
         // TODO
         // sgNode.enableRichText = this.enableRichText;
 
-        // sgNode.setString( this.string );
         sgNode.setHorizontalAlign( this.horizontalAlign );
         sgNode.setVerticalAlign( this.verticalAlign );
         sgNode.setFontSize( this._fontSize );
