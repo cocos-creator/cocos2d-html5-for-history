@@ -180,6 +180,7 @@ var Label = cc.Class({
                 this._isSystemFontUsed = value;
                 if(value){
                     if(sgNode){
+                        this.file = "";
                         sgNode.setSystemFontUsed(value);
                     }
                 }

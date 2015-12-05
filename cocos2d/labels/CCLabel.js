@@ -248,10 +248,6 @@ cc.Label = cc.Node.extend({
     },
     setFontSize: function(fntSize) {
         this._fontSize = fntSize;
-        if(this._labelType === 1){
-            this._originalFontSize = fntSize;
-            this._initFontSizeFromFile = false;
-        }
         this._notifyLabelSkinDirty();
     },
 
@@ -983,9 +979,12 @@ cc.BMFontHelper = {
         this._fontAtlas = new cc.FontAtlas(this._config);
 
         this._lineHeight = this._fontAtlas._lineHeight;
-        if (this._initFontSizeFromFile) {
-            this.setFontSize(this._fontAtlas._fontSize);
+
+        if(this._labelType === 1 && this._initFontSizeFromFile){
+            this._originalFontSize = this._fontAtlas._fontSize;
+            this._initFontSizeFromFile = false;
         }
+
 
         var locCfg = this._config;
         var locFontDict = locCfg.fontDefDictionary;
