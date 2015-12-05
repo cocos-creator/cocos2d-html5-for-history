@@ -108,6 +108,25 @@ var Label = cc.Class({
             }
         },
 
+        _lineHeight: 20,
+
+        lineHeight: {
+            get: function(){
+                var sgNode = this._sgNode;
+                if(sgNode){
+                    this._lineHeight = sgNode.getLineHeight();
+                }
+                return this._lineHeight;
+            },
+            set: function(value){
+                this._lineHeight = value;
+
+                var sgNode = this._sgNode;
+                if(sgNode){
+                    sgNode.setLineHeight(value);
+                }
+            }
+        },
         /**
          * Overflow of label
          * @property {Overflow} overFlow

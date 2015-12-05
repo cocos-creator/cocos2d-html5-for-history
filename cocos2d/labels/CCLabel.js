@@ -108,7 +108,7 @@ cc.Label = cc.Node.extend({
     _hAlign: cc.TextAlignment.LEFT, //0 left, 1 center, 2 right
     _vAlign: cc.VerticalTextAlignment.TOP, //0 bottom,1 center, 2 top
     _string: "",
-    _fontSize: 20,
+    _fontSize: 40,
     _overFlow: 0, //0 clamp, 1 shrink 2, resize to content
     _isWrapText: true,
     _spacingX: 0,
@@ -126,7 +126,7 @@ cc.Label = cc.Node.extend({
     _labelHeight:  0,
 
     // max width until a line break is added
-    _lineHeight: 0,
+    _lineHeight: 40,
     _className: "Label",
 
     //fontHandle it is a font name or bmfont file.
@@ -299,7 +299,8 @@ cc.Label = cc.Node.extend({
         var extName = cc.path.extname(fontHandle);
 
         this._resetBMFont();
-        this.setLineHeight(0);
+        this.setLineHeight(40);
+        this.setFontSize(40);
         //specify font family name directly
         if (extName === null) {
             this._fontHandle = fontHandle;
