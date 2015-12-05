@@ -22,6 +22,27 @@
  THE SOFTWARE.
  ****************************************************************************/
 
+function MonitorSize(target) {
+    this._target = target;
+}
+MonitorSize.prototype = {
+    getContentSize: function () {
+        var targetNodeSize = this._target.node._contentSize;
+        if(targetNodeSize.width && targetNodeSize.height){
+            this.setContentSize(targetNodeSize);
+        }
+        return this._target._sgNode.getContentSize();
+    },
+    setContentSize: function (size) {
+        this._target._sgNode.setContentSize(size);
+    },
+    _getWidth: function () {
+        return this.getContentSize().width;
+    },
+    _getHeight: function () {
+        return this.getContentSize().height;
+    }
+};
 var HorizontalAlign = cc.TextAlignment;
 var VerticalAlign = cc.VerticalTextAlignment;
 var Overflow = cc.Label.Overflow;
@@ -47,6 +68,7 @@ var Label = cc.Class({
          */
         string: {
             default: 'Label',
+            multiline: true,
             notify: function () {
                 var sgNode = this._sgNode;
                 if (sgNode) {
@@ -220,6 +242,15 @@ var Label = cc.Class({
 
     },
 
+    onLoad: function () {
+        this._super();
+        this.node._sizeProvider = new MonitorSize(this);
+    },
+
+    onDestroy: function () {
+        this._super();
+        this.node._sizeProvider = null;
+    },
     _createSgNode: function () {
         var sgNode = new cc.Label(this.string, this.file, cc.Label.Type.TTF);
 
@@ -231,11 +262,10 @@ var Label = cc.Class({
         sgNode.setFontSize( this.fontSize );
         sgNode.setOverflow( this.overflow );
         sgNode.enableWrapText( this.enableWrapText );
-        sgNode.setContentSize( this.node.getContentSize() );
         sgNode.setColor(this.node.color);
 
         return sgNode;
-    },
+    }
  });
 
  cc.ELabel = module.exports = Label;
