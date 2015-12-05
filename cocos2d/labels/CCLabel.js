@@ -232,7 +232,7 @@ cc.Label = cc.Node.extend({
     enableWrapText: function(enabled) {
         if (this._isWrapText === enabled) return;
         //when label is in resize mode, wrap is disabled.
-        if (this._overFlow === 2) {
+        if (this._overFlow === cc.Label.Overflow.RESIZE) {
             return;
         }
         this._isWrapText = enabled;
@@ -258,7 +258,7 @@ cc.Label = cc.Node.extend({
     setOverflow: function(overflow) {
         if (this._overFlow === overflow) return;
         this._overFlow = overflow;
-        if (this._overFlow === 2) {
+        if (this._overFlow === cc.Label.Overflow.RESIZE) {
             this._setDimensions(this._labelDimensions.width, 0);
             this.enableWrapText(true);
         }
@@ -467,7 +467,7 @@ cc.BMFontHelper = {
             this._computeAlignmentOffset();
 
             //shrink
-            if (this._overFlow === 1) {
+            if (this._overFlow === cc.Label.Overflow.SHRINK) {
                 var fontSize = this.getFontSize();
 
                 if (fontSize > 0 && this._isVerticalClamp()) {
@@ -477,7 +477,7 @@ cc.BMFontHelper = {
 
             if (!this._updateQuad()) {
                 ret = false;
-                if (!this._isWrapText && this._overFlow === 1) {
+                if (!this._isWrapText && this._overFlow === cc.Label.Overflow.SHRINK) {
                     this._shrinkLabelToContentSize(this._isHorizontalClamp.bind(this));
                 }
                 break;
@@ -523,10 +523,9 @@ cc.BMFontHelper = {
 
                     if (this._labelWidth > 0) {
                         if (px > this._contentSize.width || px < 0) {
-                            //0 is Clamp, 1 is shrink, 2 is resize
-                            if (this._overFlow === 0) {
+                            if (this._overFlow === cc.Label.Overflow.CLAMP) {
                                 this._reusedRect.width = 0;
-                            } else if (this._overFlow === 1) {
+                            } else if (this._overFlow === cc.Label.Overflow.SHRINK) {
                                 if (letterDef._width > 0 && this._contentSize.width > letterDef._width) {
                                     letterClamp = true;
                                     ret = false;
@@ -602,7 +601,7 @@ cc.BMFontHelper = {
     },
 
     _setDimensions: function(width, height) {
-        if (this._overFlow === 2) {
+        if (this._overFlow === cc.Label.Overflow.RESIZE) {
             height = 0;
         }
         if (height !== this._labelHeight || width !== this._labelWidth) {
@@ -612,7 +611,7 @@ cc.BMFontHelper = {
             this._labelDimensions.height = height;
 
             this._maxLineWidth = width;
-            if (this._overFlow === 1) {
+            if (this._overFlow === cc.Label.Overflow.SHRINK) {
                 if (this._originalFontSize > 0) {
                     this._restoreFontSize();
                 }
