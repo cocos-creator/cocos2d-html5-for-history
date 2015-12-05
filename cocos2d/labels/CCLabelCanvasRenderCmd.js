@@ -111,14 +111,7 @@
         quad._tr.colors = color;
         this._quadDirty = true;
     };
-    proto.updateStatus = function() {
-        cc.Node.RenderCmd.prototype.updateStatus.call(this);
 
-        var textDirty = this._dirtyFlag & cc.Node._dirtyFlags.textDirty;
-        if (textDirty) {
-            this._dirtyFlag = this._dirtyFlag & cc.Node._dirtyFlags.textDirty ^ this._dirtyFlag;
-        }
-    };
     proto._bakeLabel = function() {
         var node = this._node;
         this._drawFontsize = node._fontSize;
