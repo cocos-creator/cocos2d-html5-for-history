@@ -443,10 +443,8 @@ cc.Label = cc.Node.extend({
             if (this._labelType === cc.Label.Type.BMFont && this._labelSkinDirty) {
                 this._updateContent();
             }
-            return this._contentSize;
-        } else {
-            return cc.Node.prototype.getContentSize.call(this);
         }
+        return cc.Node.prototype.getContentSize.call(this);
     }
 });
 

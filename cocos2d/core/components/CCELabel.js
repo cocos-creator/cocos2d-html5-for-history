@@ -27,13 +27,10 @@ function MonitorSize(target) {
 }
 MonitorSize.prototype = {
     getContentSize: function () {
-        var targetNodeSize = this._target.node._contentSize;
-        if(targetNodeSize.width && targetNodeSize.height){
-            this.setContentSize(targetNodeSize);
-        }
         return this._target._sgNode.getContentSize();
     },
     setContentSize: function (size) {
+        this._target._useOriginalSize = false;
         this._target._sgNode.setContentSize(size);
     },
     _getWidth: function () {
@@ -61,7 +58,7 @@ var Label = cc.Class({
     },
 
     properties: {
-
+        _useOriginalSize: true,
         /**
          * Content string of label
          * @property {String} string
@@ -262,6 +259,9 @@ var Label = cc.Class({
         sgNode.setFontSize( this.fontSize );
         sgNode.setOverflow( this.overflow );
         sgNode.enableWrapText( this.enableWrapText );
+        if(!this._useOriginalSize){
+            sgNode.setContentSize(this.node.getContentSize());
+        }
         sgNode.setColor(this.node.color);
 
         return sgNode;
